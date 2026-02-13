@@ -1,0 +1,12 @@
+{
+    "domain": "llm_home_controller",
+    "name": "LLM Home Controller",
+    "codeowners": [],
+    "config_flow": true,
+    "dependencies": ["conversation"],
+    "documentation": "https://github.com/allada-homelab/LLM-Home-Controller",
+    "iot_class": "local_polling",
+    "issue_tracker": "https://github.com/allada-homelab/LLM-Home-Controller/issues",
+    "requirements": ["aiohttp", "voluptuous-openapi"],
+    "version": "0.1.0"
+}

@@ -1,0 +1,56 @@
+{
+    "name": "HA Core Functional Test",
+    "dockerComposeFile": "docker-compose.yml",
+    "service": "ha-dev",
+    "workspaceFolder": "/workspace/LLM-Home-Controller",
+    "postCreateCommand": "bash scripts/setup-ha-core.sh",
+    "postStartCommand": "export PATH=/home/vscode/.local/ha-venv/bin:$PATH",
+    "containerEnv": {
+        "PYTHONASYNCIODEBUG": "1"
+    },
+    "features": {
+        "ghcr.io/devcontainers/features/github-cli:1": {}
+    },
+    "forwardPorts": [8123, 11434],
+    "portsAttributes": {
+        "8123": {
+            "label": "Home Assistant",
+            "onAutoForward": "notify"
+        },
+        "11434": {
+            "label": "Ollama API",
+            "onAutoForward": "silent"
+        }
+    },
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "anthropic.claude-code",
+                "ms-python.python",
+                "ms-python.vscode-pylance",
+                "ms-python.debugpy",
+                "charliermarsh.ruff",
+                "redhat.vscode-yaml"
+            ],
+            "settings": {
+                "python.defaultInterpreterPath": "/home/vscode/.local/ha-venv/bin/python",
+                "python.pythonPath": "/home/vscode/.local/ha-venv/bin/python",
+                "python.terminal.activateEnvInCurrentTerminal": true,
+                "python.testing.pytestArgs": ["--no-cov"],
+                "python.analysis.typeCheckingMode": "off",
+                "editor.formatOnSave": true,
+                "files.trimTrailingWhitespace": true,
+                "yaml.customTags": [
+                    "!input scalar",
+                    "!secret scalar",
+                    "!include_dir_named scalar",
+                    "!include_dir_list scalar",
+                    "!include_dir_merge_list scalar",
+                    "!include_dir_merge_named scalar"
+                ],
+                "claude-code.permissions.defaultMode": "bypassPermissions"
+            }
+        }
+    },
+    "remoteUser": "vscode"
+}

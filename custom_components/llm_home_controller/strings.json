@@ -1,0 +1,153 @@
+{
+    "config": {
+        "step": {
+            "user": {
+                "title": "Connect to LLM API",
+                "description": "Configure the API connection for your LLM endpoint.",
+                "data": {
+                    "api_type": "API Type",
+                    "api_url": "API URL",
+                    "api_key": "API Key",
+                    "custom_headers": "Custom Headers"
+                },
+                "data_description": {
+                    "api_type": "Select the API protocol to use",
+                    "api_url": "The base URL of your LLM API endpoint",
+                    "api_key": "Optional API key for authentication",
+                    "custom_headers": "Optional custom HTTP headers as a JSON object"
+                }
+            },
+            "reconfigure": {
+                "title": "Reconfigure LLM API",
+                "description": "Update the API connection settings.",
+                "data": {
+                    "api_type": "[%key:component::llm_home_controller::config::step::user::data::api_type%]",
+                    "api_url": "[%key:component::llm_home_controller::config::step::user::data::api_url%]",
+                    "api_key": "[%key:component::llm_home_controller::config::step::user::data::api_key%]",
+                    "custom_headers": "[%key:component::llm_home_controller::config::step::user::data::custom_headers%]"
+                },
+                "data_description": {
+                    "api_type": "[%key:component::llm_home_controller::config::step::user::data_description::api_type%]",
+                    "api_url": "[%key:component::llm_home_controller::config::step::user::data_description::api_url%]",
+                    "api_key": "[%key:component::llm_home_controller::config::step::user::data_description::api_key%]",
+                    "custom_headers": "[%key:component::llm_home_controller::config::step::user::data_description::custom_headers%]"
+                }
+            }
+        },
+        "error": {
+            "cannot_connect": "Failed to connect to the API endpoint. Please check the URL.",
+            "invalid_auth": "Authentication failed. Please check your API key.",
+            "unknown": "An unexpected error occurred."
+        },
+        "abort": {
+            "already_configured": "This API endpoint is already configured.",
+            "reconfigure_successful": "[%key:common::config_flow::abort::reconfigure_successful%]"
+        }
+    },
+    "config_subentries": {
+        "conversation": {
+            "entry_type": "Conversation Agent",
+            "initiate_flow": {
+                "user": "Add conversation agent"
+            },
+            "step": {
+                "user": {
+                    "title": "Configure Conversation Agent",
+                    "description": "Set up a new conversation agent with your preferred model and settings.",
+                    "data": {
+                        "prompt_preset": "Prompt Preset",
+                        "model": "Model",
+                        "prompt": "System Prompt",
+                        "temperature": "Temperature",
+                        "max_tokens": "Max Tokens",
+                        "top_p": "Top P",
+                        "llm_hass_api": "Control Home Assistant",
+                        "max_context_tokens": "Max Context Tokens",
+                        "stop_sequences": "Stop Sequences",
+                        "max_retries": "Max Retries",
+                        "fallback_model": "Fallback Model",
+                        "voice_mode": "Voice Mode",
+                        "memory_enabled": "Conversation Memory",
+                        "memory_max_messages": "Memory Size",
+                        "custom_tools": "Custom Tools",
+                        "response_format": "Response Format",
+                        "json_schema": "JSON Schema",
+                        "seed": "Seed",
+                        "extended_thinking": "Extended Thinking",
+                        "thinking_budget": "Thinking Budget"
+                    },
+                    "data_description": {
+                        "prompt_preset": "Select a pre-built prompt or choose Custom to write your own",
+                        "model": "The model name to use for inference",
+                        "prompt": "System prompt that defines the assistant's behavior",
+                        "temperature": "Controls randomness (0.0 = deterministic, 2.0 = very random)",
+                        "max_tokens": "Maximum number of tokens in the response",
+                        "top_p": "Nucleus sampling threshold (0.0 to 1.0)",
+                        "llm_hass_api": "Allow the AI to interact with and control Home Assistant",
+                        "max_context_tokens": "Maximum context window size in tokens (0 = unlimited)",
+                        "stop_sequences": "Comma-separated list of sequences that stop generation",
+                        "max_retries": "Maximum number of retry attempts on failure",
+                        "fallback_model": "Model to use if the primary model fails",
+                        "voice_mode": "Optimize responses for voice output (shorter, no formatting)",
+                        "memory_enabled": "Remember conversation history across sessions",
+                        "memory_max_messages": "Maximum number of messages to remember",
+                        "custom_tools": "Custom tool definitions as JSON array (see documentation)",
+                        "response_format": "Output format for the response",
+                        "json_schema": "JSON schema for structured output (required when Response Format is JSON Schema)",
+                        "seed": "Random seed for reproducible outputs",
+                        "extended_thinking": "Enable extended thinking for deeper reasoning",
+                        "thinking_budget": "Maximum tokens for the thinking process"
+                    }
+                },
+                "reconfigure": {
+                    "title": "Reconfigure Conversation Agent",
+                    "description": "Update the conversation agent settings.",
+                    "data": {
+                        "prompt_preset": "[%key:component::llm_home_controller::config_subentries::conversation::step::user::data::prompt_preset%]",
+                        "model": "[%key:component::llm_home_controller::config_subentries::conversation::step::user::data::model%]",
+                        "prompt": "[%key:component::llm_home_controller::config_subentries::conversation::step::user::data::prompt%]",
+                        "temperature": "[%key:component::llm_home_controller::config_subentries::conversation::step::user::data::temperature%]",
+                        "max_tokens": "[%key:component::llm_home_controller::config_subentries::conversation::step::user::data::max_tokens%]",
+                        "top_p": "[%key:component::llm_home_controller::config_subentries::conversation::step::user::data::top_p%]",
+                        "llm_hass_api": "[%key:component::llm_home_controller::config_subentries::conversation::step::user::data::llm_hass_api%]",
+                        "max_context_tokens": "[%key:component::llm_home_controller::config_subentries::conversation::step::user::data::max_context_tokens%]",
+                        "stop_sequences": "[%key:component::llm_home_controller::config_subentries::conversation::step::user::data::stop_sequences%]",
+                        "max_retries": "[%key:component::llm_home_controller::config_subentries::conversation::step::user::data::max_retries%]",
+                        "fallback_model": "[%key:component::llm_home_controller::config_subentries::conversation::step::user::data::fallback_model%]",
+                        "voice_mode": "[%key:component::llm_home_controller::config_subentries::conversation::step::user::data::voice_mode%]",
+                        "memory_enabled": "[%key:component::llm_home_controller::config_subentries::conversation::step::user::data::memory_enabled%]",
+                        "memory_max_messages": "[%key:component::llm_home_controller::config_subentries::conversation::step::user::data::memory_max_messages%]",
+                        "custom_tools": "[%key:component::llm_home_controller::config_subentries::conversation::step::user::data::custom_tools%]",
+                        "response_format": "[%key:component::llm_home_controller::config_subentries::conversation::step::user::data::response_format%]",
+                        "json_schema": "[%key:component::llm_home_controller::config_subentries::conversation::step::user::data::json_schema%]",
+                        "seed": "[%key:component::llm_home_controller::config_subentries::conversation::step::user::data::seed%]",
+                        "extended_thinking": "[%key:component::llm_home_controller::config_subentries::conversation::step::user::data::extended_thinking%]",
+                        "thinking_budget": "[%key:component::llm_home_controller::config_subentries::conversation::step::user::data::thinking_budget%]"
+                    },
+                    "data_description": {
+                        "prompt_preset": "[%key:component::llm_home_controller::config_subentries::conversation::step::user::data_description::prompt_preset%]",
+                        "model": "[%key:component::llm_home_controller::config_subentries::conversation::step::user::data_description::model%]",
+                        "prompt": "[%key:component::llm_home_controller::config_subentries::conversation::step::user::data_description::prompt%]",
+                        "temperature": "[%key:component::llm_home_controller::config_subentries::conversation::step::user::data_description::temperature%]",
+                        "max_tokens": "[%key:component::llm_home_controller::config_subentries::conversation::step::user::data_description::max_tokens%]",
+                        "top_p": "[%key:component::llm_home_controller::config_subentries::conversation::step::user::data_description::top_p%]",
+                        "llm_hass_api": "[%key:component::llm_home_controller::config_subentries::conversation::step::user::data_description::llm_hass_api%]",
+                        "max_context_tokens": "[%key:component::llm_home_controller::config_subentries::conversation::step::user::data_description::max_context_tokens%]",
+                        "stop_sequences": "[%key:component::llm_home_controller::config_subentries::conversation::step::user::data_description::stop_sequences%]",
+                        "max_retries": "[%key:component::llm_home_controller::config_subentries::conversation::step::user::data_description::max_retries%]",
+                        "fallback_model": "[%key:component::llm_home_controller::config_subentries::conversation::step::user::data_description::fallback_model%]",
+                        "voice_mode": "[%key:component::llm_home_controller::config_subentries::conversation::step::user::data_description::voice_mode%]",
+                        "memory_enabled": "[%key:component::llm_home_controller::config_subentries::conversation::step::user::data_description::memory_enabled%]",
+                        "memory_max_messages": "[%key:component::llm_home_controller::config_subentries::conversation::step::user::data_description::memory_max_messages%]",
+                        "custom_tools": "[%key:component::llm_home_controller::config_subentries::conversation::step::user::data_description::custom_tools%]",
+                        "response_format": "[%key:component::llm_home_controller::config_subentries::conversation::step::user::data_description::response_format%]",
+                        "json_schema": "[%key:component::llm_home_controller::config_subentries::conversation::step::user::data_description::json_schema%]",
+                        "seed": "[%key:component::llm_home_controller::config_subentries::conversation::step::user::data_description::seed%]",
+                        "extended_thinking": "[%key:component::llm_home_controller::config_subentries::conversation::step::user::data_description::extended_thinking%]",
+                        "thinking_budget": "[%key:component::llm_home_controller::config_subentries::conversation::step::user::data_description::thinking_budget%]"
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,31 @@
+services:
+  ha-dev:
+    build:
+      context: ../..
+      dockerfile: .devcontainer/ha-core/Dockerfile
+    volumes:
+      - ../..:/workspace/LLM-Home-Controller:cached
+      - ha-core:/workspace/ha-core
+      - ha-config:/workspace/ha-config
+      - ha-venv:/home/vscode/.local/ha-venv
+    ports:
+      - "8123:8123"
+    environment:
+      - PYTHONASYNCIODEBUG=1
+    command: sleep infinity
+
+  # OpenAI-compatible LLM backend for functional testing.
+  # Swap this for llama-swap, vLLM, LiteLLM, etc. as needed.
+  # From inside the ha-dev container, reach this at http://ollama:11434
+  ollama:
+    image: ollama/ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+
+volumes:
+  ha-core:
+  ha-config:
+  ha-venv:
+  ollama-data:

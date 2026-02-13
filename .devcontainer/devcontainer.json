@@ -1,0 +1,31 @@
+{
+    "name": "LLM-Home-Controller",
+    "image": "mcr.microsoft.com/devcontainers/base:ubuntu-22.04",
+    "workspaceMount": "source=${localWorkspaceFolder},target=/workspace/LLM-Home-Controller,type=bind,consistency=cached",
+    "workspaceFolder": "/workspace/LLM-Home-Controller",
+    "features": {
+        "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {},
+        "ghcr.io/devcontainers/features/git:1": {},
+        "ghcr.io/devcontainers/features/sshd:1": {},
+        "ghcr.io/devcontainers/features/python:1": {
+            "version": "3.14"
+        }
+    },
+    "mounts": [
+        "source=${localEnv:HOME}/.ssh,target=/home/vscode/.ssh,type=bind,readonly"
+    ],
+    "postCreateCommand": "sudo apt-get update && sudo apt-get install -y vim make && curl -LsSf https://astral.sh/uv/install.sh | sh",
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "anthropic.claude-code",
+                "ms-python.python",
+                "charliermarsh.ruff"
+            ],
+            "settings": {
+                "claude-code.permissions.defaultMode": "bypassPermissions"
+            }
+        }
+    },
+    "remoteUser": "vscode"
+}
