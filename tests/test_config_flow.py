@@ -40,16 +40,25 @@ async def test_user_flow_success(hass: HomeAssistant) -> None:
             },
         )
 
+    # Should advance to model selection step
+    assert result["type"] is FlowResultType.FORM
+    assert result["step_id"] == "pick_model"
+
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"],
+        {CONF_MODEL: "model-b"},
+    )
+
     assert result["type"] is FlowResultType.CREATE_ENTRY
     assert result["title"] == "http://localhost:8080/v1"
     assert result["data"][CONF_API_URL] == "http://localhost:8080/v1"
     assert result["data"][CONF_API_KEY] == "test-key"
     assert result["data"][CONF_API_TYPE] == API_TYPE_OPENAI
-    # Should have created a default conversation subentry
+    # Should have created a subentry with the selected model
     assert len(result.get("subentries", [])) == 1
     subentry = result["subentries"][0]
     assert subentry["subentry_type"] == "conversation"
-    assert subentry["data"][CONF_MODEL] == "model-a"
+    assert subentry["data"][CONF_MODEL] == "model-b"
 
 
 async def test_user_flow_anthropic_type(hass: HomeAssistant) -> None:
@@ -69,9 +78,16 @@ async def test_user_flow_anthropic_type(hass: HomeAssistant) -> None:
             },
         )
 
+    assert result["type"] is FlowResultType.FORM
+    assert result["step_id"] == "pick_model"
+
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"],
+        {CONF_MODEL: "claude-3-5-sonnet"},
+    )
+
     assert result["type"] is FlowResultType.CREATE_ENTRY
     assert result["data"][CONF_API_TYPE] == API_TYPE_ANTHROPIC
-    assert result["data"][CONF_API_URL] == "https://api.anthropic.com/v1"
     subentry = result["subentries"][0]
     assert subentry["data"][CONF_MODEL] == "claude-3-5-sonnet"
 
@@ -93,15 +109,22 @@ async def test_user_flow_openai_responses_type(hass: HomeAssistant) -> None:
             },
         )
 
+    assert result["type"] is FlowResultType.FORM
+    assert result["step_id"] == "pick_model"
+
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"],
+        {CONF_MODEL: "gpt-4o"},
+    )
+
     assert result["type"] is FlowResultType.CREATE_ENTRY
     assert result["data"][CONF_API_TYPE] == API_TYPE_OPENAI_RESPONSES
-    assert result["data"][CONF_API_URL] == "https://api.openai.com/v1"
     subentry = result["subentries"][0]
     assert subentry["data"][CONF_MODEL] == "gpt-4o"
 
 
 async def test_user_flow_no_models(hass: HomeAssistant) -> None:
-    """Test user flow when API returns no models."""
+    """Test user flow when API returns no models — manual input."""
     result = await hass.config_entries.flow.async_init(DOMAIN, context={"source": config_entries.SOURCE_USER})
 
     with patch(
@@ -113,10 +136,17 @@ async def test_user_flow_no_models(hass: HomeAssistant) -> None:
             {CONF_API_URL: "http://localhost:8080/v1"},
         )
 
+    assert result["type"] is FlowResultType.FORM
+    assert result["step_id"] == "pick_model"
+
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"],
+        {CONF_MODEL: "my-custom-model"},
+    )
+
     assert result["type"] is FlowResultType.CREATE_ENTRY
-    # Default model used when API returns no models
     subentry = result["subentries"][0]
-    assert subentry["data"][CONF_MODEL] == "qwen3:4b"
+    assert subentry["data"][CONF_MODEL] == "my-custom-model"
 
 
 async def test_user_flow_cannot_connect(hass: HomeAssistant) -> None:

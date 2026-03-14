@@ -17,6 +17,16 @@
                     "custom_headers": "Optional custom HTTP headers as a JSON object"
                 }
             },
+            "pick_model": {
+                "title": "Select Model",
+                "description": "Connection successful! Choose a model for your default conversation agent.",
+                "data": {
+                    "model": "Model"
+                },
+                "data_description": {
+                    "model": "The model to use for inference"
+                }
+            },
             "reconfigure": {
                 "title": "Reconfigure LLM API",
                 "description": "Update the API connection settings.",

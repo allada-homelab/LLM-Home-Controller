@@ -108,6 +108,11 @@ class LLMHomeControllerConfigFlow(ConfigFlow, domain=DOMAIN):
 
     VERSION = 2
 
+    def __init__(self) -> None:
+        """Initialize the config flow."""
+        self._user_input: dict[str, Any] = {}
+        self._models: list[str] = []
+
     async def async_step_user(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         """Handle the initial step — API connection."""
         if user_input is None:
@@ -136,30 +141,63 @@ class LLMHomeControllerConfigFlow(ConfigFlow, domain=DOMAIN):
             _LOGGER.exception("Unexpected error during validation")
             errors["base"] = "unknown"
         else:
-            # Ensure api_type is always in the entry data
             user_input.setdefault(CONF_API_TYPE, API_TYPE_OPENAI)
-
-            default_subentry_data = {**RECOMMENDED_CONVERSATION_OPTIONS}
-            if models and DEFAULT_MODEL not in models:
-                default_subentry_data[CONF_MODEL] = models[0]
-
-            return self.async_create_entry(
-                title=api_url,
-                data=user_input,
-                subentries=[
-                    {
-                        "subentry_type": "conversation",
-                        "data": default_subentry_data,
-                        "title": "Conversation Agent",
-                        "unique_id": None,
-                    }
-                ],
-            )
+            self._user_input = user_input
+            self._models = models
+            return await self.async_step_pick_model()
 
         return self.async_show_form(
             step_id="user",
             data_schema=STEP_USER_DATA_SCHEMA,
             errors=errors,
+        )
+
+    async def async_step_pick_model(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
+        """Handle the second step — model selection."""
+        if user_input is not None:
+            selected_model = user_input.get(CONF_MODEL, DEFAULT_MODEL)
+            default_subentry_data = {
+                **RECOMMENDED_CONVERSATION_OPTIONS,
+                CONF_MODEL: selected_model,
+            }
+
+            return self.async_create_entry(
+                title=self._user_input[CONF_API_URL],
+                data=self._user_input,
+                subentries=[
+                    {
+                        "subentry_type": "conversation",
+                        "data": default_subentry_data,
+                        "title": selected_model,
+                        "unique_id": None,
+                    }
+                ],
+            )
+
+        # Build model selector
+        if self._models:
+            model_selector = SelectSelector(
+                SelectSelectorConfig(
+                    options=self._models,
+                    mode=SelectSelectorMode.DROPDOWN,
+                    custom_value=True,
+                )
+            )
+            default_model = self._models[0]
+        else:
+            model_selector = TextSelector(TextSelectorConfig())
+            default_model = DEFAULT_MODEL
+
+        schema = vol.Schema(
+            {
+                vol.Required(CONF_MODEL, default=default_model): model_selector,
+            }
+        )
+
+        return self.async_show_form(
+            step_id="pick_model",
+            data_schema=schema,
+            description_placeholders={"model_count": str(len(self._models))},
         )
 
     async def async_step_reconfigure(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
