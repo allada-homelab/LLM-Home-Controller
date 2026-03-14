@@ -295,7 +295,7 @@ class ConversationSubentryFlowHandler(ConfigSubentryFlow):
 
             title = user_input.get(CONF_MODEL, "Conversation Agent")
             if step_id == "reconfigure":
-                subentry = next(s for s in entry.subentries.values() if s.subentry_id == self.handler[1])
+                subentry = self._get_reconfigure_subentry()
                 return self.async_update_and_abort(
                     entry,
                     subentry,
@@ -307,10 +307,8 @@ class ConversationSubentryFlowHandler(ConfigSubentryFlow):
         # Build suggested values from existing subentry data if reconfiguring
         suggested_values: dict[str, Any] = {}
         if step_id == "reconfigure":
-            for subentry in entry.subentries.values():
-                if subentry.subentry_id == self.handler[1]:
-                    suggested_values = dict(subentry.data)
-                    break
+            subentry = self._get_reconfigure_subentry()
+            suggested_values = dict(subentry.data)
 
         # Model selector — dropdown if models fetched, text input otherwise
         if models:
