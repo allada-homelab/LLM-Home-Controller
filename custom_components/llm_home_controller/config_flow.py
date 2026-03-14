@@ -314,6 +314,11 @@ class ConversationSubentryFlowHandler(ConfigSubentryFlow):
 
         # Model selector — dropdown if models fetched, text input otherwise
         if models:
+            # Ensure the current model is in the options list even if the
+            # API no longer reports it (e.g. model was removed from server)
+            current_model = suggested_values.get(CONF_MODEL)
+            if current_model and current_model not in models:
+                models = [current_model, *models]
             model_selector = SelectSelector(
                 SelectSelectorConfig(
                     options=models,
