@@ -134,8 +134,6 @@ async def test_setup_entry_auth_failure(hass: HomeAssistant) -> None:
     ):
         await async_setup_entry(hass, entry)
 
-    mock_session.close.assert_called_once()
-
 
 async def test_setup_entry_connection_error(hass: HomeAssistant) -> None:
     """Test entry setup with connection error raises ConfigEntryNotReady."""
@@ -162,33 +160,27 @@ async def test_setup_entry_connection_error(hass: HomeAssistant) -> None:
 
 
 async def test_unload_entry_success(hass: HomeAssistant) -> None:
-    """Test successful entry unload closes session."""
+    """Test successful entry unload."""
     entry = MockConfigEntry(domain=DOMAIN, data={CONF_API_URL: "http://localhost:8080/v1"})
     entry.add_to_hass(hass)
-
-    mock_session = AsyncMock()
-    entry.runtime_data = mock_session
+    entry.runtime_data = AsyncMock()
 
     with patch.object(hass.config_entries, "async_unload_platforms", return_value=True):
         result = await async_unload_entry(hass, entry)
 
     assert result is True
-    mock_session.close.assert_called_once()
 
 
 async def test_unload_entry_failure(hass: HomeAssistant) -> None:
-    """Test unload failure does not close session."""
+    """Test unload failure returns False."""
     entry = MockConfigEntry(domain=DOMAIN, data={CONF_API_URL: "http://localhost:8080/v1"})
     entry.add_to_hass(hass)
-
-    mock_session = AsyncMock()
-    entry.runtime_data = mock_session
+    entry.runtime_data = AsyncMock()
 
     with patch.object(hass.config_entries, "async_unload_platforms", return_value=False):
         result = await async_unload_entry(hass, entry)
 
     assert result is False
-    mock_session.close.assert_not_called()
 
 
 async def test_migrate_v1_to_v2(hass: HomeAssistant) -> None:

@@ -294,6 +294,14 @@ class ConversationSubentryFlowHandler(ConfigSubentryFlow):
                     user_input[CONF_PROMPT] = PROMPT_PRESETS[preset]
 
             title = user_input.get(CONF_MODEL, "Conversation Agent")
+            if step_id == "reconfigure":
+                subentry = next(s for s in entry.subentries.values() if s.subentry_id == self.handler[1])
+                return self.async_update_and_abort(
+                    entry,
+                    subentry,
+                    data=user_input,
+                    title=title,
+                )
             return self.async_create_entry(title=title, data=user_input)
 
         # Build suggested values from existing subentry data if reconfiguring

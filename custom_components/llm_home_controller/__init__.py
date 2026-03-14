@@ -43,12 +43,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: LLMHomeControllerConfigE
     try:
         await async_get_models(session, api_url, api_key, api_type)
     except aiohttp.ClientResponseError as err:
-        await session.close()
         if err.status in (401, 403):
             raise ConfigEntryAuthFailed(f"Authentication failed for {api_url}: {err}") from err
         raise ConfigEntryNotReady(f"Cannot connect to {api_url}: {err}") from err
     except (aiohttp.ClientError, TimeoutError) as err:
-        await session.close()
         raise ConfigEntryNotReady(f"Cannot connect to {api_url}: {err}") from err
 
     entry.runtime_data = session
@@ -72,7 +70,4 @@ async def async_migrate_entry(hass: HomeAssistant, entry: LLMHomeControllerConfi
 
 async def async_unload_entry(hass: HomeAssistant, entry: LLMHomeControllerConfigEntry) -> bool:
     """Unload a config entry."""
-    unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
-    if unload_ok:
-        await entry.runtime_data.close()
-    return unload_ok
+    return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
