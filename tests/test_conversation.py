@@ -506,7 +506,9 @@ async def test_update_listener_registered() -> None:
     with (
         patch("custom_components.llm_home_controller.conversation.conversation.async_set_agent"),
         patch.object(entity, "async_on_remove") as mock_on_remove,
+        patch("custom_components.llm_home_controller.conversation.AgentMemoryStore") as mock_mem,
     ):
+        mock_mem.return_value.async_load = AsyncMock()
         await entity.async_added_to_hass()
 
     # async_on_remove should be called with the update listener unsub

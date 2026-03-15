@@ -83,7 +83,10 @@ DEFAULT_PROMPT = (
     "before giving up. If still not found, tell the user plainly. "
     "Do not invent entities.\n"
     "- For questions unrelated to the home, "
-    "answer briefly from general knowledge."
+    "answer briefly from general knowledge.\n"
+    "- If the user asks you to remember a preference or instruction, "
+    "use the SaveMemory tool. If they want to change or forget one, "
+    "use UpdateMemory or RemoveMemory."
 )
 DEFAULT_TEMPERATURE = 1.0
 DEFAULT_MAX_TOKENS = 1024

@@ -29,6 +29,7 @@ from .const import (
     VOICE_MODE_SUFFIX,
 )
 from .entity import LLMHomeControllerBaseLLMEntity
+from .memory import AgentMemoryStore, get_memory_tools
 from .providers import get_provider
 
 _LOGGER = logging.getLogger(__name__)
@@ -155,6 +156,9 @@ class LLMHomeControllerConversationEntity(
         # Conversation memory: rolling buffer of recent messages across all sessions
         self._conversation_history: list[dict[str, Any]] = []
 
+        # Persistent memory store (loaded in async_added_to_hass)
+        self._memory_store: AgentMemoryStore | None = None
+
     @property
     def supported_languages(self) -> list[str] | Literal["*"]:
         """Return supported languages."""
@@ -211,6 +215,16 @@ class LLMHomeControllerConversationEntity(
         # --- Custom entity context: replace HA's default YAML entity listing ---
         if entity_tpl_raw := options.get(CONF_ENTITY_CONTEXT_TEMPLATE):
             self._apply_custom_entity_context(chat_log, entity_tpl_raw)
+
+        # --- Persistent memory: inject saved preferences into prompt + tools ---
+        if self._memory_store:
+            if memory_prompt := self._memory_store.format_for_prompt():
+                system = chat_log.content[0].content  # type: ignore[union-attr]
+                chat_log.content[0] = conversation.SystemContent(content=system + "\n" + memory_prompt)
+            # Inject memory tools so the agent can save/update/remove memories
+            if chat_log.llm_api:
+                memory_tools = get_memory_tools(self._memory_store)
+                chat_log.llm_api.tools.extend(memory_tools)
 
         await self._async_handle_chat_log(chat_log)
 
@@ -283,6 +297,9 @@ class LLMHomeControllerConversationEntity(
         conversation.async_set_agent(self.hass, self.entry, self)
         # Listen for config entry updates (model changes, etc.)
         self.async_on_remove(self.entry.add_update_listener(self._async_entry_updated))
+        # Load persistent memory store
+        self._memory_store = AgentMemoryStore(self.hass, self.subentry.subentry_id)
+        await self._memory_store.async_load()
 
     async def async_will_remove_from_hass(self) -> None:
         """Unregister as a conversation agent when removed from HA."""
