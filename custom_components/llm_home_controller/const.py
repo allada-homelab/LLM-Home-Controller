@@ -42,7 +42,8 @@ CONF_VOICE_MODE = "voice_mode"
 VOICE_MODE_SUFFIX = (
     "\n\nThis conversation is happening via voice. "
     "Keep responses concise and under 2 sentences. "
-    "Optimize for spoken output — avoid markdown, lists, or code blocks."
+    "Optimize for spoken output — avoid markdown, lists, or code blocks. "
+    'Do not start responses with filler like "Sure" or "Of course".'
 )
 
 # Conversation memory
@@ -55,13 +56,10 @@ CONF_CUSTOM_TOOLS = "custom_tools"
 
 # Entity context template (replaces HA's default YAML entity listing)
 CONF_ENTITY_CONTEXT_TEMPLATE = "entity_context_template"
-DEFAULT_ENTITY_CONTEXT_TEMPLATE = """Static Context: An overview of the areas and the devices in this smart home:
+DEFAULT_ENTITY_CONTEXT_TEMPLATE = """Devices in this smart home:
+name,domain,area
 {% for state in states -%}
-- names: {{ state.name }}
-  domain: {{ state.domain }}
-{%- if area_name(state.entity_id) %}
-  areas: {{ area_name(state.entity_id) }}
-{%- endif %}
+{{ state.name }},{{ state.domain }},{{ area_name(state.entity_id) or '' }}
 {% endfor %}"""
 
 # Extra model parameters (raw JSON dict override)
@@ -69,7 +67,24 @@ CONF_EXTRA_MODEL_PARAMS = "extra_model_params"
 
 # Defaults
 DEFAULT_MODEL = "qwen3:4b"
-DEFAULT_PROMPT = "You are a helpful smart home assistant for Home Assistant."
+DEFAULT_PROMPT = (
+    "You are a Home Assistant smart home agent. "
+    "You help users control devices and answer questions about "
+    "their home using natural language.\n"
+    "\n"
+    "# Rules\n"
+    "- All text you output outside of tool use is displayed to the user. "
+    "Output text to communicate with the user.\n"
+    "- When asked to control a device, call the tool immediately. "
+    "Do not just describe what you would do.\n"
+    "- Never guess device states. "
+    "Use GetLiveContext to check current state before answering.\n"
+    "- If a device is not found, try alternative names or areas "
+    "before giving up. If still not found, tell the user plainly. "
+    "Do not invent entities.\n"
+    "- For questions unrelated to the home, "
+    "answer briefly from general knowledge."
+)
 DEFAULT_TEMPERATURE = 1.0
 DEFAULT_MAX_TOKENS = 1024
 DEFAULT_TOP_P = 1.0

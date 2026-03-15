@@ -410,7 +410,7 @@ class ConversationSubentryFlowHandler(ConfigSubentryFlow):
 
         # --- Build behavior section schema ---
         behavior_fields: dict[Any, Any] = {
-            vol.Optional(CONF_VOICE_MODE, default=False): BooleanSelector(),
+            vol.Optional(CONF_VOICE_MODE, default=True): BooleanSelector(),
             vol.Optional(CONF_MEMORY_ENABLED, default=False): BooleanSelector(),
             vol.Optional(CONF_MEMORY_MAX_MESSAGES, default=DEFAULT_MEMORY_MAX_MESSAGES): NumberSelector(
                 NumberSelectorConfig(min=2, max=100, step=1, mode=NumberSelectorMode.BOX)
