@@ -526,9 +526,7 @@ def test_apply_custom_entity_context_replaces_static_context() -> None:
     preamble = "When controlling Home Assistant always call the intent tools."
     entity_yaml = "- names: Living Room Light\n  domain: light\n"
     api_prompt = (
-        f"{preamble}\n"
-        "Static Context: An overview of the areas and the devices in this smart home:\n"
-        f"{entity_yaml}"
+        f"{preamble}\nStatic Context: An overview of the areas and the devices in this smart home:\n{entity_yaml}"
     )
     full_system = f"You are helpful.\n{api_prompt}\nThe current time is 12:00."
 

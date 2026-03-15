@@ -246,9 +246,7 @@ class LLMHomeControllerConversationEntity(
         marker_idx = system.find(marker)
         if marker_idx == -1:
             # Marker not found — HA core may have changed format, just append
-            chat_log.content[0] = conversation.SystemContent(
-                content=system + "\n" + rendered
-            )
+            chat_log.content[0] = conversation.SystemContent(content=system + "\n" + rendered)
             return
 
         # Find the end of the YAML block after the marker.
@@ -262,11 +260,7 @@ class LLMHomeControllerConversationEntity(
                 api_end = api_start + len(api_prompt)
                 # Within api_prompt, keep everything before the marker (preamble)
                 preamble_end = api_start + api_prompt.find(marker)
-                new_system = (
-                    system[:preamble_end]
-                    + rendered
-                    + system[api_end:]
-                )
+                new_system = system[:preamble_end] + rendered + system[api_end:]
                 chat_log.content[0] = conversation.SystemContent(content=new_system)
                 return
 

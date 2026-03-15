@@ -136,12 +136,8 @@ def _flatten_sections(user_input: dict[str, Any]) -> dict[str, Any]:
 def _nest_for_sections(flat: dict[str, Any]) -> dict[str, Any]:
     """Nest flat config values back into section dicts for form display."""
     nested = dict(flat)
-    nested[SECTION_ADVANCED] = {
-        k: nested.pop(k) for k in list(nested) if k in _ADVANCED_KEYS
-    }
-    nested[SECTION_BEHAVIOR] = {
-        k: nested.pop(k) for k in list(nested) if k in _BEHAVIOR_KEYS
-    }
+    nested[SECTION_ADVANCED] = {k: nested.pop(k) for k in list(nested) if k in _ADVANCED_KEYS}
+    nested[SECTION_BEHAVIOR] = {k: nested.pop(k) for k in list(nested) if k in _BEHAVIOR_KEYS}
     return nested
 
 
@@ -392,9 +388,7 @@ class ConversationSubentryFlowHandler(ConfigSubentryFlow):
                     mode=SelectSelectorMode.DROPDOWN,
                 )
             )
-            advanced_fields[vol.Optional(CONF_JSON_SCHEMA)] = TextSelector(
-                TextSelectorConfig(multiline=True)
-            )
+            advanced_fields[vol.Optional(CONF_JSON_SCHEMA)] = TextSelector(TextSelectorConfig(multiline=True))
         elif api_type == API_TYPE_ANTHROPIC:
             advanced_fields[vol.Optional(CONF_RESPONSE_FORMAT)] = SelectSelector(
                 SelectSelectorConfig(
@@ -405,9 +399,7 @@ class ConversationSubentryFlowHandler(ConfigSubentryFlow):
                     mode=SelectSelectorMode.DROPDOWN,
                 )
             )
-            advanced_fields[vol.Optional(CONF_JSON_SCHEMA)] = TextSelector(
-                TextSelectorConfig(multiline=True)
-            )
+            advanced_fields[vol.Optional(CONF_JSON_SCHEMA)] = TextSelector(TextSelectorConfig(multiline=True))
 
         if api_type in (API_TYPE_ANTHROPIC, API_TYPE_OPENAI_RESPONSES):
             advanced_fields[vol.Optional(CONF_EXTENDED_THINKING, default=False)] = BooleanSelector()
@@ -457,8 +449,6 @@ class ConversationSubentryFlowHandler(ConfigSubentryFlow):
 
         if suggested_values:
             # Nest flat values back into section dicts for form display
-            schema = self.add_suggested_values_to_schema(
-                schema, _nest_for_sections(suggested_values)
-            )
+            schema = self.add_suggested_values_to_schema(schema, _nest_for_sections(suggested_values))
 
         return self.async_show_form(step_id=step_id, data_schema=schema)
