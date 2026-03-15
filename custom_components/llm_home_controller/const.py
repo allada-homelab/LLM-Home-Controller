@@ -55,6 +55,14 @@ CONF_CUSTOM_TOOLS = "custom_tools"
 
 # Entity context template (replaces HA's default YAML entity listing)
 CONF_ENTITY_CONTEXT_TEMPLATE = "entity_context_template"
+DEFAULT_ENTITY_CONTEXT_TEMPLATE = """Static Context: An overview of the areas and the devices in this smart home:
+{% for state in states -%}
+- names: {{ state.name }}
+  domain: {{ state.domain }}
+{%- if area_name(state.entity_id) %}
+  areas: {{ area_name(state.entity_id) }}
+{%- endif %}
+{% endfor %}"""
 
 # Extra model parameters (raw JSON dict override)
 CONF_EXTRA_MODEL_PARAMS = "extra_model_params"

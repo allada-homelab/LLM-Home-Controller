@@ -76,7 +76,7 @@
                         "model": "The model name to use for inference",
                         "prompt": "System prompt that defines the assistant's behavior",
                         "llm_hass_api": "Allow the AI to interact with and control Home Assistant",
-                        "entity_context_template": "Jinja2 template to customize how exposed entities appear in the system prompt. Leave blank for default YAML format. Has access to all HA template functions (states, areas, etc.)",
+                        "entity_context_template": "Jinja2 template that controls how entities appear in the system prompt. Modify to change formatting or filter entities. Clear to use Home Assistant's built-in format.",
                         "temperature": "Controls randomness (0.0 = deterministic, 2.0 = very random)",
                         "max_tokens": "Maximum number of tokens in the response"
                     },
@@ -138,7 +138,7 @@
                         "model": "The model name to use for inference",
                         "prompt": "System prompt that defines the assistant's behavior",
                         "llm_hass_api": "Allow the AI to interact with and control Home Assistant",
-                        "entity_context_template": "Jinja2 template to customize how exposed entities appear in the system prompt. Leave blank for default YAML format. Has access to all HA template functions (states, areas, etc.)",
+                        "entity_context_template": "Jinja2 template that controls how entities appear in the system prompt. Modify to change formatting or filter entities. Clear to use Home Assistant's built-in format.",
                         "temperature": "Controls randomness (0.0 = deterministic, 2.0 = very random)",
                         "max_tokens": "Maximum number of tokens in the response"
                     },

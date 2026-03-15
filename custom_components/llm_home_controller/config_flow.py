@@ -59,6 +59,7 @@ from .const import (
     CONF_THINKING_BUDGET,
     CONF_TOP_P,
     CONF_VOICE_MODE,
+    DEFAULT_ENTITY_CONTEXT_TEMPLATE,
     DEFAULT_MAX_CONTEXT_TOKENS,
     DEFAULT_MAX_RETRIES,
     DEFAULT_MAX_TOKENS,
@@ -428,7 +429,7 @@ class ConversationSubentryFlowHandler(ConfigSubentryFlow):
                     multiple=True,
                 )
             ),
-            vol.Optional(CONF_ENTITY_CONTEXT_TEMPLATE): TemplateSelector(),
+            vol.Optional(CONF_ENTITY_CONTEXT_TEMPLATE, default=DEFAULT_ENTITY_CONTEXT_TEMPLATE): TemplateSelector(),
             vol.Optional(CONF_TEMPERATURE, default=DEFAULT_TEMPERATURE): NumberSelector(
                 NumberSelectorConfig(min=0.0, max=2.0, step=0.1, mode=NumberSelectorMode.SLIDER)
             ),
