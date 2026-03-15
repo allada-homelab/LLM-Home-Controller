@@ -289,7 +289,10 @@ class LLMHomeControllerConfigFlow(ConfigFlow, domain=DOMAIN):
     @callback
     def async_get_supported_subentry_types(cls, config_entry: ConfigEntry) -> dict[str, type[ConfigSubentryFlow]]:
         """Return subentry types supported for this config entry."""
-        return {"conversation": ConversationSubentryFlowHandler}
+        return {
+            "conversation": ConversationSubentryFlowHandler,
+            "ai_task_data": AITaskSubentryFlowHandler,
+        }
 
 
 class ConversationSubentryFlowHandler(ConfigSubentryFlow):
@@ -451,5 +454,89 @@ class ConversationSubentryFlowHandler(ConfigSubentryFlow):
         if suggested_values:
             # Nest flat values back into section dicts for form display
             schema = self.add_suggested_values_to_schema(schema, _nest_for_sections(suggested_values))
+
+        return self.async_show_form(step_id=step_id, data_schema=schema)
+
+
+class AITaskSubentryFlowHandler(ConfigSubentryFlow):
+    """Handle subentry flow for AI task agents."""
+
+    async def async_step_user(self, user_input: dict[str, Any] | None = None) -> SubentryFlowResult:
+        """Handle creation of a new AI task subentry."""
+        return await self._async_step_form(user_input, step_id="user")
+
+    async def async_step_reconfigure(self, user_input: dict[str, Any] | None = None) -> SubentryFlowResult:
+        """Handle reconfiguration of an existing AI task subentry."""
+        return await self._async_step_form(user_input, step_id="reconfigure")
+
+    async def _async_step_form(self, user_input: dict[str, Any] | None, step_id: str) -> SubentryFlowResult:
+        """Common form handler for AI task user and reconfigure steps."""
+        entry = self.hass.config_entries.async_get_entry(self.handler[0])
+        if entry is None:
+            return self.async_abort(reason="entry_not_found")
+
+        api_type = entry.data.get(CONF_API_TYPE, API_TYPE_OPENAI)
+
+        # Fetch available models
+        models: list[str] = []
+        try:
+            session = entry.runtime_data
+            models = await async_get_models(
+                session,
+                entry.data[CONF_API_URL],
+                entry.data.get(CONF_API_KEY),
+                api_type,
+            )
+        except Exception:
+            _LOGGER.warning("Could not fetch models, allowing manual input")
+
+        if user_input is not None:
+            title = user_input.get(CONF_MODEL, "AI Task Agent")
+            if step_id == "reconfigure":
+                subentry = self._get_reconfigure_subentry()
+                return self.async_update_and_abort(
+                    entry,
+                    subentry,
+                    data=user_input,
+                    title=title,
+                )
+            return self.async_create_entry(title=title, data=user_input)
+
+        # Build suggested values from existing subentry data if reconfiguring
+        suggested_values: dict[str, Any] = {}
+        if step_id == "reconfigure":
+            subentry = self._get_reconfigure_subentry()
+            suggested_values = dict(subentry.data)
+
+        # Model selector
+        if models:
+            current_model = suggested_values.get(CONF_MODEL)
+            if current_model and current_model not in models:
+                models = [current_model, *models]
+            model_selector = SelectSelector(
+                SelectSelectorConfig(
+                    options=models,
+                    mode=SelectSelectorMode.DROPDOWN,
+                    custom_value=True,
+                )
+            )
+        else:
+            model_selector = TextSelector(TextSelectorConfig())
+
+        schema = vol.Schema(
+            {
+                vol.Required(CONF_MODEL, default=DEFAULT_MODEL): model_selector,
+                vol.Optional(CONF_PROMPT): TemplateSelector(),
+                vol.Optional(CONF_TEMPERATURE, default=DEFAULT_TEMPERATURE): NumberSelector(
+                    NumberSelectorConfig(min=0.0, max=2.0, step=0.1, mode=NumberSelectorMode.SLIDER)
+                ),
+                vol.Optional(CONF_MAX_TOKENS, default=DEFAULT_MAX_TOKENS): NumberSelector(
+                    NumberSelectorConfig(min=1, max=128000, step=1, mode=NumberSelectorMode.BOX)
+                ),
+            }
+        )
+
+        if suggested_values:
+            schema = self.add_suggested_values_to_schema(schema, suggested_values)
 
         return self.async_show_form(step_id=step_id, data_schema=schema)

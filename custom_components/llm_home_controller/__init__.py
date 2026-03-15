@@ -16,7 +16,7 @@ from .providers import get_provider
 
 _LOGGER = logging.getLogger(__name__)
 
-PLATFORMS = (Platform.CONVERSATION, Platform.SENSOR)
+PLATFORMS = (Platform.AI_TASK, Platform.CONVERSATION, Platform.SENSOR)
 
 type LLMHomeControllerConfigEntry = ConfigEntry[aiohttp.ClientSession]
 

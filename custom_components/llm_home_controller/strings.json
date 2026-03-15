@@ -186,6 +186,46 @@
                     }
                 }
             }
+        },
+        "ai_task_data": {
+            "entry_type": "AI Task Agent",
+            "initiate_flow": {
+                "user": "Add AI task agent"
+            },
+            "step": {
+                "user": {
+                    "title": "Configure AI Task Agent",
+                    "description": "Set up an AI task agent for automations and data generation.",
+                    "data": {
+                        "model": "Model",
+                        "prompt": "System Prompt",
+                        "temperature": "Temperature",
+                        "max_tokens": "Max Tokens"
+                    },
+                    "data_description": {
+                        "model": "The model name to use for inference",
+                        "prompt": "Optional system prompt for task context",
+                        "temperature": "Controls randomness (0.0 = deterministic, 2.0 = very random)",
+                        "max_tokens": "Maximum number of tokens in the response"
+                    }
+                },
+                "reconfigure": {
+                    "title": "Reconfigure AI Task Agent",
+                    "description": "Update the AI task agent settings.",
+                    "data": {
+                        "model": "[%key:component::llm_home_controller::config_subentries::ai_task_data::step::user::data::model%]",
+                        "prompt": "[%key:component::llm_home_controller::config_subentries::ai_task_data::step::user::data::prompt%]",
+                        "temperature": "[%key:component::llm_home_controller::config_subentries::ai_task_data::step::user::data::temperature%]",
+                        "max_tokens": "[%key:component::llm_home_controller::config_subentries::ai_task_data::step::user::data::max_tokens%]"
+                    },
+                    "data_description": {
+                        "model": "[%key:component::llm_home_controller::config_subentries::ai_task_data::step::user::data_description::model%]",
+                        "prompt": "[%key:component::llm_home_controller::config_subentries::ai_task_data::step::user::data_description::prompt%]",
+                        "temperature": "[%key:component::llm_home_controller::config_subentries::ai_task_data::step::user::data_description::temperature%]",
+                        "max_tokens": "[%key:component::llm_home_controller::config_subentries::ai_task_data::step::user::data_description::max_tokens%]"
+                    }
+                }
+            }
         }
     }
 }

@@ -3,7 +3,7 @@
     "name": "LLM Home Controller",
     "codeowners": [],
     "config_flow": true,
-    "dependencies": ["conversation"],
+    "dependencies": ["ai_task", "conversation"],
     "documentation": "https://github.com/allada-homelab/LLM-Home-Controller",
     "iot_class": "local_polling",
     "issue_tracker": "https://github.com/allada-homelab/LLM-Home-Controller/issues",
