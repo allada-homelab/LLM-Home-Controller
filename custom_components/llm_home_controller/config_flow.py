@@ -42,6 +42,7 @@ from .const import (
     CONF_CUSTOM_HEADERS,
     CONF_CUSTOM_TOOLS,
     CONF_EXTENDED_THINKING,
+    CONF_EXTRA_MODEL_PARAMS,
     CONF_FALLBACK_MODEL,
     CONF_JSON_SCHEMA,
     CONF_MAX_CONTEXT_TOKENS,
@@ -366,6 +367,7 @@ class ConversationSubentryFlowHandler(ConfigSubentryFlow):
                 NumberSelectorConfig(min=2, max=100, step=1, mode=NumberSelectorMode.BOX)
             ),
             vol.Optional(CONF_CUSTOM_TOOLS): TextSelector(TextSelectorConfig(multiline=True)),
+            vol.Optional(CONF_EXTRA_MODEL_PARAMS): TextSelector(TextSelectorConfig(multiline=True)),
         }
 
         # Add provider-specific fields

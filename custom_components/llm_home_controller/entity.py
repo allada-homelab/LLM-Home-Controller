@@ -22,6 +22,7 @@ from homeassistant.helpers.entity import Entity
 from .const import (
     CONF_CUSTOM_TOOLS,
     CONF_EXTENDED_THINKING,
+    CONF_EXTRA_MODEL_PARAMS,
     CONF_FALLBACK_MODEL,
     CONF_JSON_SCHEMA,
     CONF_MAX_CONTEXT_TOKENS,
@@ -429,6 +430,18 @@ class LLMHomeControllerBaseLLMEntity(Entity):
                 top_p=top_p,
                 extra_options=extra_options or None,
             )
+
+            # Apply extra model params — overrides payload keys like
+            # temperature, top_p, top_k, repetition_penalty, etc.
+            if extra_params_raw := options.get(CONF_EXTRA_MODEL_PARAMS):
+                try:
+                    extra_params = json.loads(extra_params_raw)
+                    if isinstance(extra_params, dict):
+                        payload.update(extra_params)
+                    else:
+                        _LOGGER.warning("Extra model params must be a JSON object, ignoring")
+                except json.JSONDecodeError:
+                    _LOGGER.warning("Invalid extra model params JSON, ignoring")
 
             try:
                 response = await self._async_post_with_retry(url, payload, headers, max_retries)

@@ -91,6 +91,9 @@ DEFAULT_MEMORY_MAX_MESSAGES = 20
 # Custom tools
 CONF_CUSTOM_TOOLS = "custom_tools"
 
+# Extra model parameters (raw JSON dict override)
+CONF_EXTRA_MODEL_PARAMS = "extra_model_params"
+
 # Defaults
 DEFAULT_MODEL = "qwen3:4b"
 DEFAULT_PROMPT = "You are a helpful smart home assistant for Home Assistant."
