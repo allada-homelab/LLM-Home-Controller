@@ -19,6 +19,7 @@ from .const import (
     CONF_API_TYPE,
     CONF_API_URL,
     CONF_CUSTOM_HEADERS,
+    CONF_ENTITY_CONTEXT_TEMPLATE,
     CONF_MEMORY_ENABLED,
     CONF_MEMORY_MAX_MESSAGES,
     CONF_PROMPT,
@@ -207,6 +208,10 @@ class LLMHomeControllerConversationEntity(
         except conversation.ConverseError as err:
             return err.as_conversation_result()
 
+        # --- Custom entity context: replace HA's default YAML entity listing ---
+        if entity_tpl_raw := options.get(CONF_ENTITY_CONTEXT_TEMPLATE):
+            self._apply_custom_entity_context(chat_log, entity_tpl_raw)
+
         await self._async_handle_chat_log(chat_log)
 
         # --- Memory: append this session's content to rolling history ---
@@ -219,6 +224,64 @@ class LLMHomeControllerConversationEntity(
             self._conversation_history = self._conversation_history[-max_messages:]
 
         return conversation.async_get_result_from_chat_log(user_input, chat_log)
+
+    def _apply_custom_entity_context(
+        self,
+        chat_log: conversation.ChatLog,
+        template_raw: str,
+    ) -> None:
+        """Replace HA's default entity context with a user-provided Jinja2 template."""
+        try:
+            tpl = Template(template_raw, self.hass)
+            tpl.hass = self.hass
+            rendered = tpl.async_render()
+        except Exception:
+            _LOGGER.warning("Failed to render entity context template, keeping default")
+            return
+
+        system = chat_log.content[0].content  # type: ignore[union-attr]
+
+        # The default entity context starts with this marker (from HA core's AssistAPI)
+        marker = "Static Context: An overview of the areas and the devices in this smart home:"
+        marker_idx = system.find(marker)
+        if marker_idx == -1:
+            # Marker not found — HA core may have changed format, just append
+            chat_log.content[0] = conversation.SystemContent(
+                content=system + "\n" + rendered
+            )
+            return
+
+        # Find the end of the YAML block after the marker.
+        # The YAML dump from HA core ends with a trailing newline.
+        # After it, the next section (date/time or extra prompt) follows.
+        # We locate the api_prompt boundary to know exactly where to cut.
+        if chat_log.llm_api:
+            api_prompt = chat_log.llm_api.api_prompt
+            api_start = system.find(api_prompt)
+            if api_start != -1:
+                api_end = api_start + len(api_prompt)
+                # Within api_prompt, keep everything before the marker (preamble)
+                preamble_end = api_start + api_prompt.find(marker)
+                new_system = (
+                    system[:preamble_end]
+                    + rendered
+                    + system[api_end:]
+                )
+                chat_log.content[0] = conversation.SystemContent(content=new_system)
+                return
+
+        # Fallback: replace from marker to end of system prompt section
+        # (less precise but handles edge cases)
+        new_system = system[:marker_idx] + rendered
+        # Check if there's content after the YAML block (date/time, extra prompt)
+        # by looking for common suffixes
+        remaining = system[marker_idx:]
+        # The YAML block is followed by a \n\n or by the next prompt section
+        # Find the end by looking for a double newline after the YAML
+        yaml_end = remaining.find("\n\n")
+        if yaml_end != -1:
+            new_system = system[:marker_idx] + rendered + remaining[yaml_end:]
+        chat_log.content[0] = conversation.SystemContent(content=new_system)
 
     async def async_added_to_hass(self) -> None:
         """Register as a conversation agent when added to HA."""

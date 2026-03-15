@@ -65,100 +65,124 @@
                     "title": "Configure Conversation Agent",
                     "description": "Set up a new conversation agent with your preferred model and settings.",
                     "data": {
-                        "prompt_preset": "Prompt Preset",
                         "model": "Model",
                         "prompt": "System Prompt",
-                        "temperature": "Temperature",
-                        "max_tokens": "Max Tokens",
-                        "top_p": "Top P",
                         "llm_hass_api": "Control Home Assistant",
-                        "max_context_tokens": "Max Context Tokens",
-                        "stop_sequences": "Stop Sequences",
-                        "max_retries": "Max Retries",
-                        "fallback_model": "Fallback Model",
-                        "voice_mode": "Voice Mode",
-                        "memory_enabled": "Conversation Memory",
-                        "memory_max_messages": "Memory Size",
-                        "custom_tools": "Custom Tools",
-                        "extra_model_params": "Extra Model Parameters",
-                        "response_format": "Response Format",
-                        "json_schema": "JSON Schema",
-                        "seed": "Seed",
-                        "extended_thinking": "Extended Thinking",
-                        "thinking_budget": "Thinking Budget"
+                        "entity_context_template": "Entity Context Template",
+                        "temperature": "Temperature",
+                        "max_tokens": "Max Tokens"
                     },
                     "data_description": {
-                        "prompt_preset": "Select a pre-built prompt or choose Custom to write your own",
                         "model": "The model name to use for inference",
                         "prompt": "System prompt that defines the assistant's behavior",
-                        "temperature": "Controls randomness (0.0 = deterministic, 2.0 = very random)",
-                        "max_tokens": "Maximum number of tokens in the response",
-                        "top_p": "Nucleus sampling threshold (0.0 to 1.0)",
                         "llm_hass_api": "Allow the AI to interact with and control Home Assistant",
-                        "max_context_tokens": "Maximum context window size in tokens (0 = unlimited)",
-                        "stop_sequences": "Comma-separated list of sequences that stop generation",
-                        "max_retries": "Maximum number of retry attempts on failure",
-                        "fallback_model": "Model to use if the primary model fails",
-                        "voice_mode": "Optimize responses for voice output (shorter, no formatting)",
-                        "memory_enabled": "Remember conversation history across sessions",
-                        "memory_max_messages": "Maximum number of messages to remember",
-                        "custom_tools": "Custom tool definitions as JSON array (see documentation)",
-                        "extra_model_params": "JSON object of extra API parameters that override UI settings above (e.g. top_k, repetition_penalty)",
-                        "response_format": "Output format for the response",
-                        "json_schema": "JSON schema for structured output (required when Response Format is JSON Schema)",
-                        "seed": "Random seed for reproducible outputs",
-                        "extended_thinking": "Enable extended thinking for deeper reasoning",
-                        "thinking_budget": "Maximum tokens for the thinking process"
+                        "entity_context_template": "Jinja2 template to customize how exposed entities appear in the system prompt. Leave blank for default YAML format. Has access to all HA template functions (states, areas, etc.)",
+                        "temperature": "Controls randomness (0.0 = deterministic, 2.0 = very random)",
+                        "max_tokens": "Maximum number of tokens in the response"
+                    },
+                    "sections": {
+                        "advanced_model_options": {
+                            "name": "Advanced Model Options",
+                            "data": {
+                                "top_p": "Top P",
+                                "max_context_tokens": "Max Context Tokens",
+                                "max_retries": "Max Retries",
+                                "fallback_model": "Fallback Model",
+                                "extra_model_params": "Extra Model Parameters",
+                                "response_format": "Response Format",
+                                "json_schema": "JSON Schema",
+                                "extended_thinking": "Extended Thinking",
+                                "thinking_budget": "Thinking Budget"
+                            },
+                            "data_description": {
+                                "top_p": "Nucleus sampling threshold (0.0 to 1.0)",
+                                "max_context_tokens": "Maximum context window size in tokens (0 = unlimited)",
+                                "max_retries": "Maximum number of retry attempts on failure",
+                                "fallback_model": "Model to use if the primary model fails",
+                                "extra_model_params": "JSON object of extra API parameters (e.g. top_k, repetition_penalty, seed)",
+                                "response_format": "Output format for the response",
+                                "json_schema": "JSON schema for structured output (required when Response Format is JSON Schema)",
+                                "extended_thinking": "Enable extended thinking for deeper reasoning",
+                                "thinking_budget": "Maximum tokens for the thinking process"
+                            }
+                        },
+                        "behavior": {
+                            "name": "Behavior",
+                            "data": {
+                                "voice_mode": "Voice Mode",
+                                "memory_enabled": "Conversation Memory",
+                                "memory_max_messages": "Memory Size",
+                                "custom_tools": "Custom Tools"
+                            },
+                            "data_description": {
+                                "voice_mode": "Optimize responses for voice output (shorter, no formatting)",
+                                "memory_enabled": "Remember conversation history across sessions",
+                                "memory_max_messages": "Maximum number of messages to remember",
+                                "custom_tools": "Custom tool definitions as JSON array (see documentation)"
+                            }
+                        }
                     }
                 },
                 "reconfigure": {
                     "title": "Reconfigure Conversation Agent",
                     "description": "Update the conversation agent settings.",
                     "data": {
-                        "prompt_preset": "Prompt Preset",
                         "model": "Model",
                         "prompt": "System Prompt",
-                        "temperature": "Temperature",
-                        "max_tokens": "Max Tokens",
-                        "top_p": "Top P",
                         "llm_hass_api": "Control Home Assistant",
-                        "max_context_tokens": "Max Context Tokens",
-                        "stop_sequences": "Stop Sequences",
-                        "max_retries": "Max Retries",
-                        "fallback_model": "Fallback Model",
-                        "voice_mode": "Voice Mode",
-                        "memory_enabled": "Conversation Memory",
-                        "memory_max_messages": "Memory Size",
-                        "custom_tools": "Custom Tools",
-                        "extra_model_params": "Extra Model Parameters",
-                        "response_format": "Response Format",
-                        "json_schema": "JSON Schema",
-                        "seed": "Seed",
-                        "extended_thinking": "Extended Thinking",
-                        "thinking_budget": "Thinking Budget"
+                        "entity_context_template": "Entity Context Template",
+                        "temperature": "Temperature",
+                        "max_tokens": "Max Tokens"
                     },
                     "data_description": {
-                        "prompt_preset": "Select a pre-built prompt or choose Custom to write your own",
                         "model": "The model name to use for inference",
                         "prompt": "System prompt that defines the assistant's behavior",
-                        "temperature": "Controls randomness (0.0 = deterministic, 2.0 = very random)",
-                        "max_tokens": "Maximum number of tokens in the response",
-                        "top_p": "Nucleus sampling threshold (0.0 to 1.0)",
                         "llm_hass_api": "Allow the AI to interact with and control Home Assistant",
-                        "max_context_tokens": "Maximum context window size in tokens (0 = unlimited)",
-                        "stop_sequences": "Comma-separated list of sequences that stop generation",
-                        "max_retries": "Maximum number of retry attempts on failure",
-                        "fallback_model": "Model to use if the primary model fails",
-                        "voice_mode": "Optimize responses for voice output (shorter, no formatting)",
-                        "memory_enabled": "Remember conversation history across sessions",
-                        "memory_max_messages": "Maximum number of messages to remember",
-                        "custom_tools": "Custom tool definitions as JSON array (see documentation)",
-                        "extra_model_params": "JSON object of extra API parameters that override UI settings above (e.g. top_k, repetition_penalty)",
-                        "response_format": "Output format for the response",
-                        "json_schema": "JSON schema for structured output (required when Response Format is JSON Schema)",
-                        "seed": "Random seed for reproducible outputs",
-                        "extended_thinking": "Enable extended thinking for deeper reasoning",
-                        "thinking_budget": "Maximum tokens for the thinking process"
+                        "entity_context_template": "Jinja2 template to customize how exposed entities appear in the system prompt. Leave blank for default YAML format. Has access to all HA template functions (states, areas, etc.)",
+                        "temperature": "Controls randomness (0.0 = deterministic, 2.0 = very random)",
+                        "max_tokens": "Maximum number of tokens in the response"
+                    },
+                    "sections": {
+                        "advanced_model_options": {
+                            "name": "Advanced Model Options",
+                            "data": {
+                                "top_p": "Top P",
+                                "max_context_tokens": "Max Context Tokens",
+                                "max_retries": "Max Retries",
+                                "fallback_model": "Fallback Model",
+                                "extra_model_params": "Extra Model Parameters",
+                                "response_format": "Response Format",
+                                "json_schema": "JSON Schema",
+                                "extended_thinking": "Extended Thinking",
+                                "thinking_budget": "Thinking Budget"
+                            },
+                            "data_description": {
+                                "top_p": "Nucleus sampling threshold (0.0 to 1.0)",
+                                "max_context_tokens": "Maximum context window size in tokens (0 = unlimited)",
+                                "max_retries": "Maximum number of retry attempts on failure",
+                                "fallback_model": "Model to use if the primary model fails",
+                                "extra_model_params": "JSON object of extra API parameters (e.g. top_k, repetition_penalty, seed)",
+                                "response_format": "Output format for the response",
+                                "json_schema": "JSON schema for structured output (required when Response Format is JSON Schema)",
+                                "extended_thinking": "Enable extended thinking for deeper reasoning",
+                                "thinking_budget": "Maximum tokens for the thinking process"
+                            }
+                        },
+                        "behavior": {
+                            "name": "Behavior",
+                            "data": {
+                                "voice_mode": "Voice Mode",
+                                "memory_enabled": "Conversation Memory",
+                                "memory_max_messages": "Memory Size",
+                                "custom_tools": "Custom Tools"
+                            },
+                            "data_description": {
+                                "voice_mode": "Optimize responses for voice output (shorter, no formatting)",
+                                "memory_enabled": "Remember conversation history across sessions",
+                                "memory_max_messages": "Maximum number of messages to remember",
+                                "custom_tools": "Custom tool definitions as JSON array (see documentation)"
+                            }
+                        }
                     }
                 }
             }

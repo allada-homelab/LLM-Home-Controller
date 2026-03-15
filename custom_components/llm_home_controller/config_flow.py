@@ -16,6 +16,7 @@ from homeassistant.config_entries import (
 )
 from homeassistant.const import CONF_LLM_HASS_API
 from homeassistant.core import callback
+from homeassistant.data_entry_flow import section
 from homeassistant.helpers import llm
 from homeassistant.helpers.selector import (
     BooleanSelector,
@@ -41,6 +42,7 @@ from .const import (
     CONF_API_URL,
     CONF_CUSTOM_HEADERS,
     CONF_CUSTOM_TOOLS,
+    CONF_ENTITY_CONTEXT_TEMPLATE,
     CONF_EXTENDED_THINKING,
     CONF_EXTRA_MODEL_PARAMS,
     CONF_FALLBACK_MODEL,
@@ -52,10 +54,7 @@ from .const import (
     CONF_MEMORY_MAX_MESSAGES,
     CONF_MODEL,
     CONF_PROMPT,
-    CONF_PROMPT_PRESET,
     CONF_RESPONSE_FORMAT,
-    CONF_SEED,
-    CONF_STOP_SEQUENCES,
     CONF_TEMPERATURE,
     CONF_THINKING_BUDGET,
     CONF_TOP_P,
@@ -70,11 +69,13 @@ from .const import (
     DEFAULT_THINKING_BUDGET,
     DEFAULT_TOP_P,
     DOMAIN,
-    PROMPT_PRESET_CUSTOM,
-    PROMPT_PRESETS,
 )
 
 _LOGGER = logging.getLogger(__name__)
+
+# Section keys for collapsible groups
+SECTION_ADVANCED = "advanced_model_options"
+SECTION_BEHAVIOR = "behavior"
 
 STEP_USER_DATA_SCHEMA = vol.Schema(
     {
@@ -102,6 +103,46 @@ RECOMMENDED_CONVERSATION_OPTIONS = {
     CONF_TOP_P: DEFAULT_TOP_P,
     CONF_LLM_HASS_API: [llm.LLM_API_ASSIST],
 }
+
+# Keys that belong in each section (for flattening/nesting)
+_ADVANCED_KEYS = {
+    CONF_TOP_P,
+    CONF_MAX_CONTEXT_TOKENS,
+    CONF_MAX_RETRIES,
+    CONF_FALLBACK_MODEL,
+    CONF_EXTRA_MODEL_PARAMS,
+    CONF_RESPONSE_FORMAT,
+    CONF_JSON_SCHEMA,
+    CONF_EXTENDED_THINKING,
+    CONF_THINKING_BUDGET,
+}
+_BEHAVIOR_KEYS = {
+    CONF_VOICE_MODE,
+    CONF_MEMORY_ENABLED,
+    CONF_MEMORY_MAX_MESSAGES,
+    CONF_CUSTOM_TOOLS,
+}
+
+
+def _flatten_sections(user_input: dict[str, Any]) -> dict[str, Any]:
+    """Flatten section dicts into a flat config dict for storage."""
+    flat = dict(user_input)
+    for section_key in (SECTION_ADVANCED, SECTION_BEHAVIOR):
+        if section_key in flat and isinstance(flat[section_key], dict):
+            flat.update(flat.pop(section_key))
+    return flat
+
+
+def _nest_for_sections(flat: dict[str, Any]) -> dict[str, Any]:
+    """Nest flat config values back into section dicts for form display."""
+    nested = dict(flat)
+    nested[SECTION_ADVANCED] = {
+        k: nested.pop(k) for k in list(nested) if k in _ADVANCED_KEYS
+    }
+    nested[SECTION_BEHAVIOR] = {
+        k: nested.pop(k) for k in list(nested) if k in _BEHAVIOR_KEYS
+    }
+    return nested
 
 
 class LLMHomeControllerConfigFlow(ConfigFlow, domain=DOMAIN):
@@ -287,23 +328,19 @@ class ConversationSubentryFlowHandler(ConfigSubentryFlow):
             _LOGGER.warning("Could not fetch models, allowing manual input")
 
         if user_input is not None:
-            # Handle prompt preset: populate prompt if a preset was selected
-            preset = user_input.pop(CONF_PROMPT_PRESET, PROMPT_PRESET_CUSTOM)
-            if preset != PROMPT_PRESET_CUSTOM and preset in PROMPT_PRESETS:
-                current_prompt = user_input.get(CONF_PROMPT, "")
-                if not current_prompt or current_prompt == DEFAULT_PROMPT:
-                    user_input[CONF_PROMPT] = PROMPT_PRESETS[preset]
+            # Flatten section dicts into a flat config dict
+            flat = _flatten_sections(user_input)
 
-            title = user_input.get(CONF_MODEL, "Conversation Agent")
+            title = flat.get(CONF_MODEL, "Conversation Agent")
             if step_id == "reconfigure":
                 subentry = self._get_reconfigure_subentry()
                 return self.async_update_and_abort(
                     entry,
                     subentry,
-                    data=user_input,
+                    data=flat,
                     title=title,
                 )
-            return self.async_create_entry(title=title, data=user_input)
+            return self.async_create_entry(title=title, data=flat)
 
         # Build suggested values from existing subentry data if reconfiguring
         suggested_values: dict[str, Any] = {}
@@ -328,51 +365,24 @@ class ConversationSubentryFlowHandler(ConfigSubentryFlow):
         else:
             model_selector = TextSelector(TextSelectorConfig())
 
-        schema_fields: dict[Any, Any] = {
-            vol.Optional(CONF_PROMPT_PRESET, default=PROMPT_PRESET_CUSTOM): SelectSelector(
-                SelectSelectorConfig(
-                    options=[{"value": k, "label": k.replace("_", " ").title()} for k in PROMPT_PRESETS],
-                    mode=SelectSelectorMode.DROPDOWN,
-                )
-            ),
-            vol.Required(CONF_MODEL, default=DEFAULT_MODEL): model_selector,
-            vol.Optional(CONF_PROMPT, default=DEFAULT_PROMPT): TemplateSelector(),
-            vol.Optional(CONF_LLM_HASS_API): SelectSelector(
-                SelectSelectorConfig(
-                    options=[api.id for api in llm.async_get_apis(self.hass)],
-                    mode=SelectSelectorMode.DROPDOWN,
-                    multiple=True,
-                )
-            ),
-            vol.Optional(CONF_TEMPERATURE, default=DEFAULT_TEMPERATURE): NumberSelector(
-                NumberSelectorConfig(min=0.0, max=2.0, step=0.1, mode=NumberSelectorMode.SLIDER)
-            ),
-            vol.Optional(CONF_MAX_TOKENS, default=DEFAULT_MAX_TOKENS): NumberSelector(
-                NumberSelectorConfig(min=1, max=128000, step=1, mode=NumberSelectorMode.BOX)
-            ),
+        # --- Build advanced section schema (provider-specific fields included) ---
+        advanced_fields: dict[Any, Any] = {
             vol.Optional(CONF_TOP_P, default=DEFAULT_TOP_P): NumberSelector(
                 NumberSelectorConfig(min=0.0, max=1.0, step=0.05, mode=NumberSelectorMode.SLIDER)
             ),
             vol.Optional(CONF_MAX_CONTEXT_TOKENS, default=DEFAULT_MAX_CONTEXT_TOKENS): NumberSelector(
                 NumberSelectorConfig(min=0, max=1000000, step=1000, mode=NumberSelectorMode.BOX)
             ),
-            vol.Optional(CONF_STOP_SEQUENCES): TextSelector(TextSelectorConfig()),
             vol.Optional(CONF_MAX_RETRIES, default=DEFAULT_MAX_RETRIES): NumberSelector(
                 NumberSelectorConfig(min=0, max=10, step=1, mode=NumberSelectorMode.BOX)
             ),
             vol.Optional(CONF_FALLBACK_MODEL): TextSelector(TextSelectorConfig()),
-            vol.Optional(CONF_VOICE_MODE, default=False): BooleanSelector(),
-            vol.Optional(CONF_MEMORY_ENABLED, default=False): BooleanSelector(),
-            vol.Optional(CONF_MEMORY_MAX_MESSAGES, default=DEFAULT_MEMORY_MAX_MESSAGES): NumberSelector(
-                NumberSelectorConfig(min=2, max=100, step=1, mode=NumberSelectorMode.BOX)
-            ),
-            vol.Optional(CONF_CUSTOM_TOOLS): TextSelector(TextSelectorConfig(multiline=True)),
             vol.Optional(CONF_EXTRA_MODEL_PARAMS): TextSelector(TextSelectorConfig(multiline=True)),
         }
 
-        # Add provider-specific fields
+        # Provider-specific fields in advanced section
         if api_type in (API_TYPE_OPENAI, API_TYPE_OPENAI_RESPONSES):
-            schema_fields[vol.Optional(CONF_RESPONSE_FORMAT)] = SelectSelector(
+            advanced_fields[vol.Optional(CONF_RESPONSE_FORMAT)] = SelectSelector(
                 SelectSelectorConfig(
                     options=[
                         {"value": "text", "label": "Text (default)"},
@@ -382,10 +392,11 @@ class ConversationSubentryFlowHandler(ConfigSubentryFlow):
                     mode=SelectSelectorMode.DROPDOWN,
                 )
             )
-            schema_fields[vol.Optional(CONF_JSON_SCHEMA)] = TextSelector(TextSelectorConfig(multiline=True))
+            advanced_fields[vol.Optional(CONF_JSON_SCHEMA)] = TextSelector(
+                TextSelectorConfig(multiline=True)
+            )
         elif api_type == API_TYPE_ANTHROPIC:
-            # Anthropic: JSON schema via system prompt injection
-            schema_fields[vol.Optional(CONF_RESPONSE_FORMAT)] = SelectSelector(
+            advanced_fields[vol.Optional(CONF_RESPONSE_FORMAT)] = SelectSelector(
                 SelectSelectorConfig(
                     options=[
                         {"value": "text", "label": "Text (default)"},
@@ -394,23 +405,60 @@ class ConversationSubentryFlowHandler(ConfigSubentryFlow):
                     mode=SelectSelectorMode.DROPDOWN,
                 )
             )
-            schema_fields[vol.Optional(CONF_JSON_SCHEMA)] = TextSelector(TextSelectorConfig(multiline=True))
-
-        if api_type == API_TYPE_OPENAI:
-            schema_fields[vol.Optional(CONF_SEED)] = NumberSelector(
-                NumberSelectorConfig(min=0, max=2147483647, step=1, mode=NumberSelectorMode.BOX)
+            advanced_fields[vol.Optional(CONF_JSON_SCHEMA)] = TextSelector(
+                TextSelectorConfig(multiline=True)
             )
 
-        # Add extended thinking fields for Anthropic and Responses API
         if api_type in (API_TYPE_ANTHROPIC, API_TYPE_OPENAI_RESPONSES):
-            schema_fields[vol.Optional(CONF_EXTENDED_THINKING, default=False)] = BooleanSelector()
-            schema_fields[vol.Optional(CONF_THINKING_BUDGET, default=DEFAULT_THINKING_BUDGET)] = NumberSelector(
+            advanced_fields[vol.Optional(CONF_EXTENDED_THINKING, default=False)] = BooleanSelector()
+            advanced_fields[vol.Optional(CONF_THINKING_BUDGET, default=DEFAULT_THINKING_BUDGET)] = NumberSelector(
                 NumberSelectorConfig(min=1000, max=128000, step=1000, mode=NumberSelectorMode.BOX)
             )
+
+        # --- Build behavior section schema ---
+        behavior_fields: dict[Any, Any] = {
+            vol.Optional(CONF_VOICE_MODE, default=False): BooleanSelector(),
+            vol.Optional(CONF_MEMORY_ENABLED, default=False): BooleanSelector(),
+            vol.Optional(CONF_MEMORY_MAX_MESSAGES, default=DEFAULT_MEMORY_MAX_MESSAGES): NumberSelector(
+                NumberSelectorConfig(min=2, max=100, step=1, mode=NumberSelectorMode.BOX)
+            ),
+            vol.Optional(CONF_CUSTOM_TOOLS): TextSelector(TextSelectorConfig(multiline=True)),
+        }
+
+        # --- Main form schema ---
+        schema_fields: dict[Any, Any] = {
+            vol.Required(CONF_MODEL, default=DEFAULT_MODEL): model_selector,
+            vol.Optional(CONF_PROMPT, default=DEFAULT_PROMPT): TemplateSelector(),
+            vol.Optional(CONF_LLM_HASS_API, default=[llm.LLM_API_ASSIST]): SelectSelector(
+                SelectSelectorConfig(
+                    options=[api.id for api in llm.async_get_apis(self.hass)],
+                    mode=SelectSelectorMode.DROPDOWN,
+                    multiple=True,
+                )
+            ),
+            vol.Optional(CONF_ENTITY_CONTEXT_TEMPLATE): TemplateSelector(),
+            vol.Optional(CONF_TEMPERATURE, default=DEFAULT_TEMPERATURE): NumberSelector(
+                NumberSelectorConfig(min=0.0, max=2.0, step=0.1, mode=NumberSelectorMode.SLIDER)
+            ),
+            vol.Optional(CONF_MAX_TOKENS, default=DEFAULT_MAX_TOKENS): NumberSelector(
+                NumberSelectorConfig(min=1, max=128000, step=1, mode=NumberSelectorMode.BOX)
+            ),
+            vol.Required(SECTION_ADVANCED): section(
+                vol.Schema(advanced_fields),
+                {"collapsed": True},
+            ),
+            vol.Required(SECTION_BEHAVIOR): section(
+                vol.Schema(behavior_fields),
+                {"collapsed": True},
+            ),
+        }
 
         schema = vol.Schema(schema_fields)
 
         if suggested_values:
-            schema = self.add_suggested_values_to_schema(schema, suggested_values)
+            # Nest flat values back into section dicts for form display
+            schema = self.add_suggested_values_to_schema(
+                schema, _nest_for_sections(suggested_values)
+            )
 
         return self.async_show_form(step_id=step_id, data_schema=schema)

@@ -37,44 +37,6 @@ CONF_MAX_RETRIES = "max_retries"
 DEFAULT_MAX_RETRIES = 3
 CONF_FALLBACK_MODEL = "fallback_model"
 
-# Prompt presets
-CONF_PROMPT_PRESET = "prompt_preset"
-PROMPT_PRESET_CUSTOM = "custom"
-
-PROMPT_PRESETS: dict[str, str] = {
-    PROMPT_PRESET_CUSTOM: "",
-    "smart_home": (
-        "You are a smart home assistant for Home Assistant. "
-        "Help the user control devices, check statuses, and create automations. "
-        "When asked to control devices, use the available tools. "
-        "Be helpful and proactive about suggesting related actions."
-    ),
-    "concise": (
-        "You are a concise smart home assistant. "
-        "Keep all responses under 2 sentences. "
-        "Prefer action over explanation. "
-        "Only elaborate when the user asks for details."
-    ),
-    "voice": (
-        "You are a voice-controlled smart home assistant. "
-        "Keep responses very short and natural for spoken output. "
-        "Never use markdown, lists, or formatting. "
-        "Respond as if speaking aloud in 1-2 sentences."
-    ),
-    "technical": (
-        "You are a technical home automation assistant. "
-        "Provide detailed explanations of device states, automations, and configurations. "
-        "Reference entity IDs and service calls when relevant. "
-        "Help debug issues with detailed diagnostic information."
-    ),
-    "security": (
-        "You are a security-focused home assistant. "
-        "Prioritize safety in all actions. Always confirm potentially dangerous actions "
-        "like unlocking doors or disabling alarms before executing them. "
-        "Proactively report unusual device states or security concerns."
-    ),
-}
-
 # Voice mode
 CONF_VOICE_MODE = "voice_mode"
 VOICE_MODE_SUFFIX = (
@@ -90,6 +52,9 @@ DEFAULT_MEMORY_MAX_MESSAGES = 20
 
 # Custom tools
 CONF_CUSTOM_TOOLS = "custom_tools"
+
+# Entity context template (replaces HA's default YAML entity listing)
+CONF_ENTITY_CONTEXT_TEMPLATE = "entity_context_template"
 
 # Extra model parameters (raw JSON dict override)
 CONF_EXTRA_MODEL_PARAMS = "extra_model_params"
