@@ -29,6 +29,7 @@ from .const import (
     VOICE_MODE_SUFFIX,
 )
 from .entity import LLMHomeControllerBaseLLMEntity
+from .entity_tools import get_entity_tools
 from .memory import AgentMemoryStore, get_memory_tools
 from .providers import get_provider
 
@@ -225,6 +226,10 @@ class LLMHomeControllerConversationEntity(
             if chat_log.llm_api:
                 memory_tools = get_memory_tools(self._memory_store)
                 chat_log.llm_api.tools.extend(memory_tools)
+
+        # Inject entity query tools (always available when LLM API is active)
+        if chat_log.llm_api:
+            chat_log.llm_api.tools.extend(get_entity_tools())
 
         await self._async_handle_chat_log(chat_log)
 

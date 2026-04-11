@@ -57,9 +57,9 @@ CONF_CUSTOM_TOOLS = "custom_tools"
 # Entity context template (replaces HA's default YAML entity listing)
 CONF_ENTITY_CONTEXT_TEMPLATE = "entity_context_template"
 DEFAULT_ENTITY_CONTEXT_TEMPLATE = """Devices in this smart home:
-name,domain,area
+entity_id,name,domain,area,state
 {% for state in states -%}
-{{ state.name }},{{ state.domain }},{{ area_name(state.entity_id) or '' }}
+{{ state.entity_id }},{{ state.name }},{{ state.domain }},{{ area_name(state.entity_id) or '' }},{{ state.state }}
 {% endfor %}"""
 
 # Extra model parameters (raw JSON dict override)
@@ -78,7 +78,7 @@ DEFAULT_PROMPT = (
     "- When asked to control a device, call the tool immediately. "
     "Do not just describe what you would do.\n"
     "- Never guess device states. "
-    "Use GetLiveContext to check current state before answering.\n"
+    "Use GetEntityDetails to check current state and attributes before answering.\n"
     "- If a device is not found, try alternative names or areas "
     "before giving up. If still not found, tell the user plainly. "
     "Do not invent entities.\n"
