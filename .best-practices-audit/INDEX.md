@@ -9,10 +9,9 @@ then writes one scoped ticket per finding.
 
 **Result:** 20 findings → 20 tickets. By severity: **4 high · 12 medium · 4 low**.
 
-**Status:** 10 **DONE** (shipped in `0582f6e`), 5 **WON'T DO (permanent)**, 5 **open**.
-- Done: `BP-UV-01`, `BP-UV-02`, `BP-UV-03`, `BP-UV-05`, `BP-CON-03`, `BP-CON-04`, `BP-CON-05`, `BP-CON-06`, `BP-PY-02`, `BP-PY-03`.
+**Status:** 15 **DONE**, 5 **WON'T DO (permanent)**, 0 **open**.
+- Done: all 15 actionable tickets (`BP-UV-01/02/03/05`, `BP-CON-03/04/05/06/07/08/09`, `BP-PY-02/03/05/06`).
 - Won't do (maintainer decision): `BP-CON-01`, `BP-CON-02`, `BP-UV-04`, `BP-PY-01`, `BP-PY-04`.
-- Open: `BP-CON-07`, `BP-CON-08`, `BP-CON-09`, `BP-PY-05`, `BP-PY-06`.
 
 ## Layout
 - `findings/<domain>.md` — full audit report per sub-skill (summary table + per-rule detail).
@@ -41,7 +40,7 @@ then writes one scoped ticket per finding.
 | [BP-CON-04](tickets/BP-CON-04.md) | DOCKER-002 | ✅ **DONE** — Pin the `ollama/ollama` image to a tag (ideally a digest) |
 | [BP-CON-05](tickets/BP-CON-05.md) | DOCKER-027 | ✅ **DONE** — Add `# syntax=docker/dockerfile:1` to the ha-core Dockerfile |
 | [BP-CON-06](tickets/BP-CON-06.md) | DEVC-018 | ✅ **DONE** — Add `init: true` to the ha-dev compose service (PID-1 reaping) |
-| [BP-CON-07](tickets/BP-CON-07.md) | DEVC-005 | Mount a uv cache volume for the ha-core dev stack |
+| [BP-CON-07](tickets/BP-CON-07.md) | DEVC-005 | ✅ **DONE** — Mount a uv cache volume for the ha-core dev stack |
 | ~~[BP-PY-01](tickets/BP-PY-01.md)~~ | PY-012 | ~~Add mypy strict type checking to dev deps and CI~~ — **WON'T DO** |
 | [BP-PY-02](tickets/BP-PY-02.md) | PY-021 | ✅ **DONE** — Add the `S` (flake8-bandit) ruff rule family with a tests per-file-ignore |
 | [BP-PY-03](tickets/BP-PY-03.md) | PY-030 | ✅ **DONE** — Add `--strict-markers` and `--strict-config` to pytest addopts |
@@ -54,10 +53,10 @@ then writes one scoped ticket per finding.
 ### Low
 | Ticket | Rule | Title |
 |---|---|---|
-| [BP-CON-08](tickets/BP-CON-08.md) | DEVC-009 | Add the even-better-toml extension to both dev containers |
-| [BP-CON-09](tickets/BP-CON-09.md) | COMPOSE-009 | Add `restart: unless-stopped` to the ollama service |
-| [BP-PY-05](tickets/BP-PY-05.md) | PY-004 | Remove stale egg-info artifact; no build backend for this HACS component |
-| [BP-PY-06](tickets/BP-PY-06.md) | PY-022 | Add per-file ruff ignores for tests and `__init__.py` |
+| [BP-CON-08](tickets/BP-CON-08.md) | DEVC-009 | ✅ **DONE** — Add the even-better-toml extension to both dev containers |
+| [BP-CON-09](tickets/BP-CON-09.md) | COMPOSE-009 | ✅ **DONE** — Add `restart: unless-stopped` to the ollama service |
+| [BP-PY-05](tickets/BP-PY-05.md) | PY-004 | ✅ **DONE** — Remove stale egg-info artifact; no build backend for this HACS component |
+| [BP-PY-06](tickets/BP-PY-06.md) | PY-022 | ✅ **DONE** — Add per-file ruff ignores for tests and `__init__.py` |
 
 ## Re-running
 ```

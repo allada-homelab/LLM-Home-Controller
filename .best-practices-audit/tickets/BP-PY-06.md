@@ -1,5 +1,7 @@
 # BP-PY-06: Add per-file ruff ignores for tests and `__init__.py`
 
+> **Status: DONE** — the `tests/**/*.py` ignores already landed with BP-PY-02; this added the `"**/__init__.py" = ["F401"]` entry. `uv run ruff check .` passes.
+
 **Severity:** low  |  **Rule:** PY-022 (python-best-practices)  |  **Area:** `pyproject.toml` ruff lint config; `tests/`, `**/__init__.py`
 
 ## Context

@@ -1,5 +1,7 @@
 # BP-CON-07: Mount a uv cache volume for the ha-core dev stack
 
+> **Status: DONE** — `uv-cache:/home/vscode/.cache/uv` mounted on `ha-dev` + declared top-level; `setup-ha-core.sh` chown extended to `/home/vscode/.cache`. `docker compose config` validates.
+
 **Severity:** medium  |  **Rule:** DEVC-005 (containers-best-practices)  |  **Area:** `.devcontainer/ha-core/docker-compose.yml` (HA Core Functional Test dev container)
 
 ## Context

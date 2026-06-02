@@ -1,5 +1,7 @@
 # BP-PY-05: Remove stale egg-info artifact; do not declare a build backend for this HACS component
 
+> **Status: DONE** — `llm_home_controller.egg-info/` deleted (was untracked + gitignored). No `[build-system]` added, per the ticket. ruff + 228 tests still pass.
+
 **Severity:** low  |  **Rule:** PY-004 (python-best-practices)  |  **Area:** `pyproject.toml`, `llm_home_controller.egg-info/` (repo root)
 
 ## Context

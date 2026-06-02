@@ -1,5 +1,7 @@
 # BP-CON-09: Add `restart: unless-stopped` to the ollama service
 
+> **Status: DONE** — `restart: unless-stopped` added to the `ollama` service; `docker compose config` validates.
+
 **Severity:** low  |  **Rule:** COMPOSE-009 (containers-best-practices)  |  **Area:** `.devcontainer/ha-core/docker-compose.yml` — ollama dev-test backend service
 
 ## Context

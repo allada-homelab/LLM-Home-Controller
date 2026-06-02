@@ -1,5 +1,7 @@
 # BP-CON-08: Add the even-better-toml extension to both dev containers
 
+> **Status: DONE** — `tamasfe.even-better-toml` added to both `devcontainer.json` extension arrays; both files still parse as valid JSONC.
+
 **Severity:** low  |  **Rule:** DEVC-009 (containers-best-practices)  |  **Area:** `.devcontainer/devcontainer.json`, `.devcontainer/ha-core/devcontainer.json`
 
 ## Context
