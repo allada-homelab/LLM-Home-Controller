@@ -1,5 +1,7 @@
 # BP-CON-04: Pin the `ollama/ollama` image to a tag (ideally a digest)
 
+> **Status: DONE** — shipped in commit `0582f6e`. Pinned to `ollama/ollama:0.30.0@sha256:a5f42ba1…` (real digest from Docker Hub); `docker compose config` validates.
+
 **Severity:** medium  |  **Rule:** DOCKER-002 (containers-best-practices)  |  **Area:** `.devcontainer/ha-core/docker-compose.yml` — `ollama` functional-test backend service
 
 ## Context

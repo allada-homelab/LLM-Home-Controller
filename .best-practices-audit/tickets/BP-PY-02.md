@@ -1,5 +1,7 @@
 # BP-PY-02: Add the `S` (flake8-bandit) ruff rule family with a tests per-file-ignore
 
+> **Status: DONE** — shipped in commit `0582f6e`. `S` added to `select`; `tests/**/*.py` ignores `S101/105/106/107`. `uv run ruff check .` passes with zero errors.
+
 **Severity:** medium  |  **Rule:** PY-021 (python-best-practices)  |  **Area:** `pyproject.toml` ruff lint config (whole-repo static security linting)
 
 ## Context

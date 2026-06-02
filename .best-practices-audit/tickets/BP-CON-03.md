@@ -1,5 +1,7 @@
 # BP-CON-03: Add a repo-root `.dockerignore` to scope the ha-core build context
 
+> **Status: DONE** — shipped in commit `0582f6e`. Repo-root `.dockerignore` added; `docker build --check` confirms it is loaded and the context excludes `.git`/`.venv`.
+
 **Severity:** high  |  **Rule:** SEC-001 (containers-best-practices)  |  **Area:** repo root / `.devcontainer/ha-core/` build context
 
 ## Context

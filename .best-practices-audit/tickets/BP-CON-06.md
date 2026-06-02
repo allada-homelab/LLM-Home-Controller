@@ -1,5 +1,7 @@
 # BP-CON-06: Add `init: true` to the ha-dev compose service for PID-1 zombie reaping
 
+> **Status: DONE** — shipped in commit `0582f6e`. `init: true` added to `ha-dev`; `docker compose config` shows it in the resolved config.
+
 **Severity:** medium  |  **Rule:** DEVC-018 (containers-best-practices)  |  **Area:** `.devcontainer/ha-core/docker-compose.yml` (HA Core Functional Test dev container)
 
 ## Context

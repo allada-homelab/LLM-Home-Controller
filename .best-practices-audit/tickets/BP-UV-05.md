@@ -1,5 +1,7 @@
 # BP-UV-05: Align the runtime Python pin so .python-version, CI, and the ruff target agree
 
+> **Status: DONE (with deviation)** — shipped in commit `0582f6e`. Runtime drift fixed: `setup-uv` now reads `.python-version` (3.14) so CI no longer hardcodes 3.13. **Deviation:** ruff `target-version` was kept at `py313` (the `requires-python` floor), NOT bumped to `py314` as this ticket proposed — linting at the minimum supported version is correct, and `py314` triggers a ruff 0.15.1 formatter bug that rewrites valid `except (A, B):` into invalid syntax.
+
 **Severity:** medium  |  **Rule:** UVP-050 (uv-best-practices)  |  **Area:** `.python-version`, `.github/workflows/lint.yml`, `pyproject.toml`, `.devcontainer/devcontainer.json`
 
 ## Context

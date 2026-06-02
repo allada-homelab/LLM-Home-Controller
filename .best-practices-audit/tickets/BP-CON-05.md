@@ -1,5 +1,7 @@
 # BP-CON-05: Add `# syntax=docker/dockerfile:1` directive to ha-core Dockerfile
 
+> **Status: DONE** — shipped in commit `0582f6e`. Directive added as line 1; `docker build --check` resolves the frontend with no warnings.
+
 **Severity:** medium  |  **Rule:** DOCKER-027 (containers-best-practices)  |  **Area:** `.devcontainer/ha-core/Dockerfile`
 
 ## Context

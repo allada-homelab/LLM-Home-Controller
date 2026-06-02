@@ -1,5 +1,7 @@
 # BP-UV-01: Validate the committed uv.lock in CI via a uv-based sync job
 
+> **Status: DONE** — shipped in commit `0582f6e`. `lint.yml` rewritten to a uv job (`uv lock --check` + `uv sync --locked --dev` + ruff + pytest), actions SHA-pinned. Required adding `PyTurboJPEG` to the dev group so the suite collects.
+
 **Severity:** high  |  **Rule:** UVP-032 (uv-best-practices)  |  **Area:** `.github/workflows/lint.yml`, `.github/workflows/validate.yml`
 
 ## Context

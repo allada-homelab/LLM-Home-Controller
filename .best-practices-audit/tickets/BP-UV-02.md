@@ -1,5 +1,7 @@
 # BP-UV-02: Install ruff from the lockfile in CI via `uv sync` instead of raw `pip install`
 
+> **Status: DONE** — shipped in commit `0582f6e`, folded into the BP-UV-01 `lint.yml` rewrite (ruff now runs via `uv run` against the locked version).
+
 **Severity:** medium  |  **Rule:** UVP-040 (uv-best-practices)  |  **Area:** `.github/workflows/lint.yml` / CI tooling
 
 ## Context

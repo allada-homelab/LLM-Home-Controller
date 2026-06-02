@@ -9,7 +9,10 @@ then writes one scoped ticket per finding.
 
 **Result:** 20 findings → 20 tickets. By severity: **4 high · 12 medium · 4 low**.
 
-**Status:** 5 tickets marked **WON'T DO (permanent)** by maintainer decision — `BP-CON-01`, `BP-CON-02`, `BP-UV-04`, `BP-PY-01`, `BP-PY-04`. 15 open.
+**Status:** 10 **DONE** (shipped in `0582f6e`), 5 **WON'T DO (permanent)**, 5 **open**.
+- Done: `BP-UV-01`, `BP-UV-02`, `BP-UV-03`, `BP-UV-05`, `BP-CON-03`, `BP-CON-04`, `BP-CON-05`, `BP-CON-06`, `BP-PY-02`, `BP-PY-03`.
+- Won't do (maintainer decision): `BP-CON-01`, `BP-CON-02`, `BP-UV-04`, `BP-PY-01`, `BP-PY-04`.
+- Open: `BP-CON-07`, `BP-CON-08`, `BP-CON-09`, `BP-PY-05`, `BP-PY-06`.
 
 ## Layout
 - `findings/<domain>.md` — full audit report per sub-skill (summary table + per-rule detail).
@@ -29,24 +32,24 @@ then writes one scoped ticket per finding.
 |---|---|---|
 | ~~[BP-CON-01](tickets/BP-CON-01.md)~~ | UV-001 | ~~Pin uv image to version+digest in the ha-core dev container Dockerfile~~ — **WON'T DO** |
 | ~~[BP-CON-02](tickets/BP-CON-02.md)~~ | DOCKER-002 | ~~Pin the ha-core dev container base image by tag + digest~~ — **WON'T DO** |
-| [BP-CON-03](tickets/BP-CON-03.md) | SEC-001 | Add a repo-root `.dockerignore` to scope the ha-core build context |
-| [BP-UV-01](tickets/BP-UV-01.md) | UVP-032 | Validate the committed `uv.lock` in CI via a uv-based sync job |
+| [BP-CON-03](tickets/BP-CON-03.md) | SEC-001 | ✅ **DONE** — Add a repo-root `.dockerignore` to scope the ha-core build context |
+| [BP-UV-01](tickets/BP-UV-01.md) | UVP-032 | ✅ **DONE** — Validate the committed `uv.lock` in CI via a uv-based sync job |
 
 ### Medium
 | Ticket | Rule | Title |
 |---|---|---|
-| [BP-CON-04](tickets/BP-CON-04.md) | DOCKER-002 | Pin the `ollama/ollama` image to a tag (ideally a digest) |
-| [BP-CON-05](tickets/BP-CON-05.md) | DOCKER-027 | Add `# syntax=docker/dockerfile:1` to the ha-core Dockerfile |
-| [BP-CON-06](tickets/BP-CON-06.md) | DEVC-018 | Add `init: true` to the ha-dev compose service (PID-1 reaping) |
+| [BP-CON-04](tickets/BP-CON-04.md) | DOCKER-002 | ✅ **DONE** — Pin the `ollama/ollama` image to a tag (ideally a digest) |
+| [BP-CON-05](tickets/BP-CON-05.md) | DOCKER-027 | ✅ **DONE** — Add `# syntax=docker/dockerfile:1` to the ha-core Dockerfile |
+| [BP-CON-06](tickets/BP-CON-06.md) | DEVC-018 | ✅ **DONE** — Add `init: true` to the ha-dev compose service (PID-1 reaping) |
 | [BP-CON-07](tickets/BP-CON-07.md) | DEVC-005 | Mount a uv cache volume for the ha-core dev stack |
 | ~~[BP-PY-01](tickets/BP-PY-01.md)~~ | PY-012 | ~~Add mypy strict type checking to dev deps and CI~~ — **WON'T DO** |
-| [BP-PY-02](tickets/BP-PY-02.md) | PY-021 | Add the `S` (flake8-bandit) ruff rule family with a tests per-file-ignore |
-| [BP-PY-03](tickets/BP-PY-03.md) | PY-030 | Add `--strict-markers` and `--strict-config` to pytest addopts |
+| [BP-PY-02](tickets/BP-PY-02.md) | PY-021 | ✅ **DONE** — Add the `S` (flake8-bandit) ruff rule family with a tests per-file-ignore |
+| [BP-PY-03](tickets/BP-PY-03.md) | PY-030 | ✅ **DONE** — Add `--strict-markers` and `--strict-config` to pytest addopts |
 | ~~[BP-PY-04](tickets/BP-PY-04.md)~~ | PY-035 | ~~Add a local coverage gate with branch coverage~~ — **WON'T DO** |
-| [BP-UV-02](tickets/BP-UV-02.md) | UVP-040 | Install ruff from the lockfile in CI via `uv sync`, not raw `pip install` |
-| [BP-UV-03](tickets/BP-UV-03.md) | UVP-008 | Add `[tool.uv] required-version` to pin a resolver floor |
+| [BP-UV-02](tickets/BP-UV-02.md) | UVP-040 | ✅ **DONE** — Install ruff from the lockfile in CI via `uv sync`, not raw `pip install` |
+| [BP-UV-03](tickets/BP-UV-03.md) | UVP-008 | ✅ **DONE** — Add `[tool.uv] required-version` to pin a resolver floor |
 | ~~[BP-UV-04](tickets/BP-UV-04.md)~~ | UVP-028 | ~~Add a `uv audit` CI job to scan `uv.lock` for known CVEs~~ — **WON'T DO** |
-| [BP-UV-05](tickets/BP-UV-05.md) | UVP-050 | Align the runtime Python pin (`.python-version` / CI / ruff target) |
+| [BP-UV-05](tickets/BP-UV-05.md) | UVP-050 | ✅ **DONE** (runtime drift fixed; ruff target kept at py313 — see ticket) — Align the runtime Python pin |
 
 ### Low
 | Ticket | Rule | Title |

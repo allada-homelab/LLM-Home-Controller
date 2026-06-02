@@ -1,5 +1,7 @@
 # BP-PY-03: Add `--strict-markers` and `--strict-config` to pytest addopts
 
+> **Status: DONE** — shipped in commit `0582f6e`. `addopts = ["--strict-markers", "--strict-config"]` added; 228 tests pass.
+
 **Severity:** medium  |  **Rule:** PY-030 (python-best-practices)  |  **Area:** `pyproject.toml` — `[tool.pytest.ini_options]` (test configuration)
 
 ## Context

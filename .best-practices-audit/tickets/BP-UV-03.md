@@ -1,5 +1,7 @@
 # BP-UV-03: Add `[tool.uv] required-version` to pin a resolver floor
 
+> **Status: DONE** — shipped in commit `0582f6e`. `[tool.uv] required-version = ">=0.8.0"` added to `pyproject.toml`; `uv lock --check` confirms no re-resolution.
+
 **Severity:** medium  |  **Rule:** UVP-008 (uv-best-practices)  |  **Area:** `pyproject.toml`, dev container / CI uv toolchain
 
 ## Context
