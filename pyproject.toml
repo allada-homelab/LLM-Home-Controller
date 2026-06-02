@@ -55,6 +55,9 @@ select = [
     "S106",   # same — test secrets passed as kwargs
     "S107",   # same — test secrets as defaults
 ]
+"**/__init__.py" = [
+    "F401",   # re-exports look unused to pyflakes
+]
 
 [tool.ruff.lint.isort]
 known-first-party = ["custom_components.llm_home_controller"]

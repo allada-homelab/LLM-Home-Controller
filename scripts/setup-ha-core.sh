@@ -14,7 +14,7 @@ echo ""
 
 # --- Step 0: Fix ownership of Docker named volumes ---
 # Named volumes and parent dirs may be created as root; ensure vscode user owns them.
-sudo chown -R "$(id -u):$(id -g)" "$HA_CORE_DIR" "$HA_CONFIG_DIR" "$VENV_DIR" /home/vscode/.local 2>/dev/null || true
+sudo chown -R "$(id -u):$(id -g)" "$HA_CORE_DIR" "$HA_CONFIG_DIR" "$VENV_DIR" /home/vscode/.local /home/vscode/.cache 2>/dev/null || true
 
 # --- Step 1: Clone HA Core ---
 if [ ! -d "$HA_CORE_DIR/.git" ]; then

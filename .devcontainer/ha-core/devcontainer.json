@@ -30,7 +30,8 @@
                 "ms-python.vscode-pylance",
                 "ms-python.debugpy",
                 "charliermarsh.ruff",
-                "redhat.vscode-yaml"
+                "redhat.vscode-yaml",
+                "tamasfe.even-better-toml"
             ],
             "settings": {
                 "python.defaultInterpreterPath": "/home/vscode/.local/ha-venv/bin/python",

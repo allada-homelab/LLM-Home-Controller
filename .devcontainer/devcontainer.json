@@ -33,7 +33,8 @@
             "extensions": [
                 "anthropic.claude-code",
                 "ms-python.python",
-                "charliermarsh.ruff"
+                "charliermarsh.ruff",
+                "tamasfe.even-better-toml"
             ],
             "settings": {
                 "python.defaultInterpreterPath": "/workspace/LLM-Home-Controller/.venv/bin/python",

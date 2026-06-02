@@ -9,6 +9,7 @@ services:
       - ha-core:/workspace/ha-core
       - ha-config:/workspace/ha-config
       - ha-venv:/home/vscode/.local/ha-venv
+      - uv-cache:/home/vscode/.cache/uv
     ports:
       - "8123:8123"
     environment:
@@ -21,6 +22,7 @@ services:
   ollama:
     # ollama/ollama:0.30.0 — update digest when bumping the tag
     image: ollama/ollama:0.30.0@sha256:a5f42ba1af98f623a341f9f13140abce6b8ad2eacdc618338771aceb81b08668
+    restart: unless-stopped
     ports:
       - "11434:11434"
     volumes:
@@ -31,3 +33,4 @@ volumes:
   ha-config:
   ha-venv:
   ollama-data:
+  uv-cache:
