@@ -46,6 +46,7 @@ from .const import (
     CONF_EXTENDED_THINKING,
     CONF_EXTRA_MODEL_PARAMS,
     CONF_FALLBACK_MODEL,
+    CONF_FALLBACK_MODEL_2,
     CONF_JSON_SCHEMA,
     CONF_MAX_CONTEXT_TOKENS,
     CONF_MAX_RETRIES,
@@ -111,6 +112,7 @@ _ADVANCED_KEYS = {
     CONF_MAX_CONTEXT_TOKENS,
     CONF_MAX_RETRIES,
     CONF_FALLBACK_MODEL,
+    CONF_FALLBACK_MODEL_2,
     CONF_EXTRA_MODEL_PARAMS,
     CONF_RESPONSE_FORMAT,
     CONF_JSON_SCHEMA,
@@ -377,6 +379,7 @@ class ConversationSubentryFlowHandler(ConfigSubentryFlow):
                 NumberSelectorConfig(min=0, max=10, step=1, mode=NumberSelectorMode.BOX)
             ),
             vol.Optional(CONF_FALLBACK_MODEL): TextSelector(TextSelectorConfig()),
+            vol.Optional(CONF_FALLBACK_MODEL_2): TextSelector(TextSelectorConfig()),
             vol.Optional(CONF_EXTRA_MODEL_PARAMS): TextSelector(TextSelectorConfig(multiline=True)),
         }
 

@@ -22,6 +22,7 @@ from homeassistant.helpers import llm
 
 from custom_components.llm_home_controller.const import (
     CONF_FALLBACK_MODEL,
+    CONF_FALLBACK_MODEL_2,
     CONF_MAX_CONTEXT_TOKENS,
     CONF_MAX_RETRIES,
     CONF_MAX_TOKENS,
@@ -1716,6 +1717,132 @@ async def test_fallback_also_fails() -> None:
         await entity._async_handle_chat_log(chat_log)
 
     assert session.post.call_count == 2
+
+
+@pytest.mark.asyncio
+async def test_second_fallback_used_when_first_fallback_fails() -> None:
+    """Test the chain advances to the second fallback when the first also fails."""
+    entity, session = _make_entity(
+        subentry_data={
+            CONF_MODEL: "primary-model",
+            CONF_TEMPERATURE: DEFAULT_TEMPERATURE,
+            CONF_MAX_TOKENS: DEFAULT_MAX_TOKENS,
+            CONF_TOP_P: DEFAULT_TOP_P,
+            CONF_MAX_RETRIES: 0,
+            CONF_FALLBACK_MODEL: "fallback-1",
+            CONF_FALLBACK_MODEL_2: "fallback-2",
+        }
+    )
+    chat_log = _make_chat_log()
+
+    resp_500 = MagicMock()
+    resp_500.status = 500
+    resp_500.headers = {}
+    resp_500.text = AsyncMock(return_value="Server Error")
+
+    lines = [
+        _sse({"choices": [{"delta": {"role": "assistant", "content": "OK"}, "finish_reason": None}]}),
+        _sse({"choices": [{"delta": {}, "finish_reason": "stop"}]}),
+        _sse("[DONE]"),
+    ]
+    resp_ok = _mock_sse_response(lines)
+
+    # primary fails, fallback-1 fails, fallback-2 succeeds
+    session.post = AsyncMock(side_effect=[resp_500, resp_500, resp_ok])
+
+    with patch("custom_components.llm_home_controller.entity.conversation.async_conversation_trace_append"):
+        await entity._async_handle_chat_log(chat_log)
+
+    assert session.post.call_count == 3
+    assert session.post.call_args_list[2].kwargs["json"]["model"] == "fallback-2"
+
+
+@pytest.mark.asyncio
+async def test_whole_chain_fails_raises_primary_error() -> None:
+    """Test that when every model in the chain fails, the primary error is raised."""
+    entity, session = _make_entity(
+        subentry_data={
+            CONF_MODEL: "primary-model",
+            CONF_TEMPERATURE: DEFAULT_TEMPERATURE,
+            CONF_MAX_TOKENS: DEFAULT_MAX_TOKENS,
+            CONF_TOP_P: DEFAULT_TOP_P,
+            CONF_MAX_RETRIES: 0,
+            CONF_FALLBACK_MODEL: "fallback-1",
+            CONF_FALLBACK_MODEL_2: "fallback-2",
+        }
+    )
+    chat_log = _make_chat_log()
+
+    def _err(text: str) -> MagicMock:
+        resp = MagicMock()
+        resp.status = 500
+        resp.headers = {}
+        resp.text = AsyncMock(return_value=text)
+        return resp
+
+    session.post = AsyncMock(side_effect=[_err("primary down"), _err("fb1 down"), _err("fb2 down")])
+
+    with (
+        patch("custom_components.llm_home_controller.entity.conversation.async_conversation_trace_append"),
+        pytest.raises(HomeAssistantError, match="primary down"),
+    ):
+        await entity._async_handle_chat_log(chat_log)
+
+    assert session.post.call_count == 3
+
+
+@pytest.mark.asyncio
+async def test_fallback_is_sticky_across_tool_iterations() -> None:
+    """Once a fallback takes over, later tool iterations reuse it (no re-probe)."""
+    entity, session = _make_entity(
+        subentry_data={
+            CONF_MODEL: "primary-model",
+            CONF_TEMPERATURE: DEFAULT_TEMPERATURE,
+            CONF_MAX_TOKENS: DEFAULT_MAX_TOKENS,
+            CONF_TOP_P: DEFAULT_TOP_P,
+            CONF_MAX_RETRIES: 0,
+            CONF_FALLBACK_MODEL: "fallback-1",
+        }
+    )
+    chat_log = _make_chat_log(unresponded=True)
+
+    # Stop the tool loop after the second successful response.
+    completed = {"n": 0}
+
+    async def add_delta(entity_id: str, stream: Any) -> AsyncIterator:
+        async for _ in stream:
+            pass
+        completed["n"] += 1
+        if completed["n"] >= 2:
+            chat_log.unresponded_tool_results = set()
+        return
+        yield
+
+    chat_log.async_add_delta_content_stream = add_delta
+
+    resp_500 = MagicMock()
+    resp_500.status = 500
+    resp_500.headers = {}
+    resp_500.text = AsyncMock(return_value="Server Error")
+
+    def _ok() -> MockStreamResponse:
+        return _mock_sse_response(
+            [
+                _sse({"choices": [{"delta": {"role": "assistant", "content": "OK"}, "finish_reason": None}]}),
+                _sse({"choices": [{"delta": {}, "finish_reason": "stop"}]}),
+                _sse("[DONE]"),
+            ]
+        )
+
+    # iter 1: primary fails → fallback-1 succeeds. iter 2: fallback-1 used directly.
+    session.post = AsyncMock(side_effect=[resp_500, _ok(), _ok()])
+
+    with patch("custom_components.llm_home_controller.entity.conversation.async_conversation_trace_append"):
+        await entity._async_handle_chat_log(chat_log)
+
+    assert session.post.call_count == 3
+    # The third call (second iteration) goes straight to fallback-1, not primary.
+    assert session.post.call_args_list[2].kwargs["json"]["model"] == "fallback-1"
 
 
 # --- Feature 10: Usage signal ---

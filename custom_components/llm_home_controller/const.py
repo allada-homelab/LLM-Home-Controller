@@ -35,7 +35,9 @@ CONF_JSON_SCHEMA = "json_schema"
 # Retry / fallback
 CONF_MAX_RETRIES = "max_retries"
 DEFAULT_MAX_RETRIES = 3
+# Fallback models tried in order if the primary is unreachable/fails.
 CONF_FALLBACK_MODEL = "fallback_model"
+CONF_FALLBACK_MODEL_2 = "fallback_model_2"
 
 # Voice mode
 CONF_VOICE_MODE = "voice_mode"

@@ -24,6 +24,7 @@ from .const import (
     CONF_EXTENDED_THINKING,
     CONF_EXTRA_MODEL_PARAMS,
     CONF_FALLBACK_MODEL,
+    CONF_FALLBACK_MODEL_2,
     CONF_JSON_SCHEMA,
     CONF_MAX_CONTEXT_TOKENS,
     CONF_MAX_RETRIES,
@@ -326,6 +327,46 @@ class LLMHomeControllerBaseLLMEntity(Entity):
 
         raise last_error  # type: ignore[misc]
 
+    async def _async_post_with_fallback(
+        self,
+        url: str,
+        payload: dict[str, Any],
+        headers: dict[str, str],
+        max_retries: int,
+        model_chain: list[str],
+        start_idx: int,
+    ) -> tuple[aiohttp.ClientResponse, int]:
+        """Post, walking the model chain from start_idx until one succeeds.
+
+        The model at start_idx (the currently committed model) gets the full
+        retry budget; each subsequent model in the chain is probed with no
+        retries so we fail over quickly. Returns the response and the index of
+        the model that succeeded. Authentication failures never fail over.
+        """
+        first_error: HomeAssistantError | None = None
+
+        for idx in range(start_idx, len(model_chain)):
+            payload["model"] = model_chain[idx]
+            retries = max_retries if idx == start_idx else 0
+            try:
+                response = await self._async_post_with_retry(url, payload, headers, retries)
+            except HomeAssistantError as err:
+                if "Authentication failed" in str(err):
+                    raise
+                if first_error is None:
+                    first_error = err
+                if idx + 1 < len(model_chain):
+                    _LOGGER.warning(
+                        "Model '%s' failed, trying fallback '%s': %s",
+                        model_chain[idx],
+                        model_chain[idx + 1],
+                        err,
+                    )
+                continue
+            return response, idx
+
+        raise first_error  # type: ignore[misc]
+
     async def _async_handle_chat_log(
         self,
         chat_log: conversation.ChatLog,
@@ -337,7 +378,9 @@ class LLMHomeControllerBaseLLMEntity(Entity):
         max_tokens = options.get(CONF_MAX_TOKENS, DEFAULT_MAX_TOKENS)
         top_p = options.get(CONF_TOP_P, DEFAULT_TOP_P)
         max_retries = int(options.get(CONF_MAX_RETRIES, DEFAULT_MAX_RETRIES))
-        fallback_model = options.get(CONF_FALLBACK_MODEL)
+        # Primary first, then any configured fallbacks tried in order.
+        model_chain = [model]
+        model_chain += [m for m in (options.get(CONF_FALLBACK_MODEL), options.get(CONF_FALLBACK_MODEL_2)) if m]
 
         tools: list[dict[str, Any]] = []
         custom_serializer = None
@@ -410,6 +453,9 @@ class LLMHomeControllerBaseLLMEntity(Entity):
         usage_totals = [0, 0]  # [input_tokens, output_tokens] — mutable for closure
 
         iteration = 0
+        # Sticky across tool iterations: once we fail over to a fallback within
+        # this message, keep using it instead of re-probing the dead model.
+        current_model_idx = 0
         for iteration in range(MAX_TOOL_ITERATIONS):  # noqa: B007 — used after loop
             # Re-convert full chat log each iteration
             # (required for Anthropic's strict role alternation)
@@ -443,24 +489,9 @@ class LLMHomeControllerBaseLLMEntity(Entity):
                 except json.JSONDecodeError:
                     _LOGGER.warning("Invalid extra model params JSON, ignoring")
 
-            try:
-                response = await self._async_post_with_retry(url, payload, headers, max_retries)
-            except HomeAssistantError as primary_err:
-                # Try fallback model if configured and error is not auth-related
-                if fallback_model and "Authentication failed" not in str(primary_err):
-                    _LOGGER.warning(
-                        "Primary model '%s' failed, trying fallback '%s': %s",
-                        model,
-                        fallback_model,
-                        primary_err,
-                    )
-                    payload["model"] = fallback_model
-                    try:
-                        response = await self._async_post_with_retry(url, payload, headers, 0)
-                    except HomeAssistantError:
-                        raise primary_err from None
-                else:
-                    raise
+            response, current_model_idx = await self._async_post_with_fallback(
+                url, payload, headers, max_retries, model_chain, current_model_idx
+            )
 
             try:
                 async for _content in chat_log.async_add_delta_content_stream(
@@ -489,5 +520,5 @@ class LLMHomeControllerBaseLLMEntity(Entity):
         # Trace completion summary
         conversation.async_conversation_trace_append(
             conversation.ConversationTraceEventType.AGENT_DETAIL,
-            {"stats": {"iterations": iteration + 1, "model": model}},
+            {"stats": {"iterations": iteration + 1, "model": model_chain[current_model_idx]}},
         )
