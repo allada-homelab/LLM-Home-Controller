@@ -1,0 +1,36 @@
+# VCS (SEC-013: .git ships full history + possible tokens in .git/config)
+.git
+.gitignore
+.gitattributes
+.github
+
+# Python
+__pycache__
+*.py[cod]
+*$py.class
+.venv
+venv
+.pytest_cache
+.mypy_cache
+.ruff_cache
+*.egg-info
+build
+dist
+
+# Environment / secrets (defense in depth)
+.env
+.env.*
+!.env.example
+**/*.pem
+**/*.key
+
+# Editors / OS
+.vscode
+.idea
+.DS_Store
+
+# Docker itself
+Dockerfile*
+.dockerignore
+compose*.yml
+docker-compose*.yml

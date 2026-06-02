@@ -3,6 +3,7 @@ services:
     build:
       context: ../..
       dockerfile: .devcontainer/ha-core/Dockerfile
+    init: true
     volumes:
       - ../..:/workspace/LLM-Home-Controller:cached
       - ha-core:/workspace/ha-core
@@ -18,7 +19,8 @@ services:
   # Swap this for llama-swap, vLLM, LiteLLM, etc. as needed.
   # From inside the ha-dev container, reach this at http://ollama:11434
   ollama:
-    image: ollama/ollama
+    # ollama/ollama:0.30.0 — update digest when bumping the tag
+    image: ollama/ollama:0.30.0@sha256:a5f42ba1af98f623a341f9f13140abce6b8ad2eacdc618338771aceb81b08668
     ports:
       - "11434:11434"
     volumes:
