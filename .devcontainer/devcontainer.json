@@ -1,8 +1,12 @@
 {
     "name": "LLM-Home-Controller",
-    "image": "mcr.microsoft.com/devcontainers/base:ubuntu-22.04",
+    "build": {
+        "dockerfile": "Dockerfile"
+    },
     "workspaceMount": "source=${localWorkspaceFolder},target=/workspace/LLM-Home-Controller,type=bind,consistency=cached",
     "workspaceFolder": "/workspace/LLM-Home-Controller",
+    "init": true,
+    "waitFor": "postCreateCommand",
     "features": {
         "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {},
         "ghcr.io/devcontainers/features/git:1": {},
@@ -12,9 +16,18 @@
         }
     },
     "mounts": [
-        "source=${localEnv:HOME}/.ssh,target=/home/vscode/.ssh,type=bind,readonly"
+        // HOME + USERPROFILE concatenation so the source resolves on Linux/macOS
+        // AND Windows (exactly one var is set per OS) — DEVC-012.
+        "source=${localEnv:HOME}${localEnv:USERPROFILE}/.ssh,target=/home/vscode/.ssh,type=bind,readonly",
+        // Claude Code state: per-worktree named volume so login + history survive
+        // rebuilds and stay isolated from the host (DEVC-015). Never bind-mount this.
+        "source=llmhc-claude-${devcontainerId},target=/home/vscode/.claude,type=volume",
+        // uv download cache: shared across worktrees so rebuilds don't re-fetch (DEVC-005).
+        "source=llmhc-uv-cache,target=/home/vscode/.cache/uv,type=volume"
     ],
-    "postCreateCommand": "sudo apt-get update && sudo apt-get install -y vim make && curl -LsSf https://astral.sh/uv/install.sh | sh",
+    // Named volumes mount root-owned; hand them to the non-root user once on create (DEVC-010).
+    "onCreateCommand": "sudo mkdir -p /home/vscode/.claude /home/vscode/.cache/uv && sudo chown -R vscode:vscode /home/vscode/.claude /home/vscode/.cache",
+    "postCreateCommand": "uv sync",
     "customizations": {
         "vscode": {
             "extensions": [
@@ -23,6 +36,13 @@
                 "charliermarsh.ruff"
             ],
             "settings": {
+                "python.defaultInterpreterPath": "/workspace/LLM-Home-Controller/.venv/bin/python",
+                "editor.formatOnSave": true,
+                "[python]": {
+                    "editor.defaultFormatter": "charliermarsh.ruff"
+                },
+                // Autonomous-agent bypass: intentional for this isolated dev container.
+                // Note it pairs with a host Docker socket + mounted SSH keys — keep the container trusted.
                 "claude-code.permissions.defaultMode": "bypassPermissions"
             }
         }
