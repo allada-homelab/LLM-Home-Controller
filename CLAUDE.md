@@ -104,3 +104,14 @@ All tasks tracked in `.tasks/` directory — see `.tasks/progress.md` for curren
 - Test all error paths: connection refused, auth failure, timeout, malformed response
 - Run: `uv run pytest tests/ -v`
 - Lint: `uv run ruff check .`
+
+## CI (`.github/workflows/lint.yml`)
+- uv-based job: `uv lock --check` → `uv sync --locked --dev` → `uv run ruff check .` → `uv run ruff format --check .` → `uv run pytest tests/`. Mirror it locally before pushing.
+- `astral-sh/setup-uv` reads `.python-version` (3.14) — there is no hardcoded CI Python version; bump the pin in that file, not the workflow.
+- Actions are SHA-pinned (with a `# vX.Y.Z` comment). Keep them pinned when bumping.
+- `validate.yml` runs hassfest only; it's independent of the lockfile.
+
+## Gotchas
+- **ruff `target-version` stays `py313`**, not `py314`: lint against the `requires-python` floor, and ruff 0.15.1's `py314` formatter is buggy (rewrites `except (A, B):` into invalid syntax).
+- **`PyTurboJPEG` is a dev dep** (pinned to HA's version): HA's `camera` component imports it, and `test_ai_task.py` pulls `camera` in transitively — without it the whole suite fails to collect.
+- **Never `pip install -e .`** here — it regenerates `llm_home_controller.egg-info/` and triggers setuptools auto-discovery. This is a HACS integration (symlink into `ha-config`), not a pip package; there is intentionally no `[build-system]`.
