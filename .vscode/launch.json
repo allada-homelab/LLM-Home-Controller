@@ -1,0 +1,34 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Home Assistant",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "homeassistant",
+      "args": ["-c", "/workspace/ha-config"],
+      "justMyCode": false,
+      "python": "/home/vscode/.local/ha-venv/bin/python",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Home Assistant (skip pip)",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "homeassistant",
+      "args": ["-c", "/workspace/ha-config", "--skip-pip"],
+      "justMyCode": false,
+      "python": "/home/vscode/.local/ha-venv/bin/python",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Debug Current Test File",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "pytest",
+      "args": ["${file}", "-v"],
+      "justMyCode": false,
+      "console": "integratedTerminal"
+    }
+  ]
+}

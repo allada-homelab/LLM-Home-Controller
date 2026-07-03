@@ -9,9 +9,9 @@ then writes one scoped ticket per finding.
 
 **Result:** 20 findings → 20 tickets. By severity: **4 high · 12 medium · 4 low**.
 
-**Status:** 15 **DONE**, 5 **WON'T DO (permanent)**, 0 **open**.
-- Done: all 15 actionable tickets (`BP-UV-01/02/03/05`, `BP-CON-03/04/05/06/07/08/09`, `BP-PY-02/03/05/06`).
-- Won't do (maintainer decision): `BP-CON-01`, `BP-CON-02`, `BP-UV-04`, `BP-PY-01`, `BP-PY-04`.
+**Status:** 16 **DONE**, 4 **WON'T DO (permanent)**, 0 **open**.
+- Done: all 16 actionable tickets (`BP-UV-01/02/03/05`, `BP-CON-03/04/05/06/07/08/09`, `BP-PY-01/02/03/05/06`).
+- Won't do (maintainer decision): `BP-CON-01`, `BP-CON-02`, `BP-UV-04`, `BP-PY-04`.
 
 ## Layout
 - `findings/<domain>.md` — full audit report per sub-skill (summary table + per-rule detail).
@@ -41,7 +41,7 @@ then writes one scoped ticket per finding.
 | [BP-CON-05](tickets/BP-CON-05.md) | DOCKER-027 | ✅ **DONE** — Add `# syntax=docker/dockerfile:1` to the ha-core Dockerfile |
 | [BP-CON-06](tickets/BP-CON-06.md) | DEVC-018 | ✅ **DONE** — Add `init: true` to the ha-dev compose service (PID-1 reaping) |
 | [BP-CON-07](tickets/BP-CON-07.md) | DEVC-005 | ✅ **DONE** — Mount a uv cache volume for the ha-core dev stack |
-| ~~[BP-PY-01](tickets/BP-PY-01.md)~~ | PY-012 | ~~Add mypy strict type checking to dev deps and CI~~ — **WON'T DO** |
+| [BP-PY-01](tickets/BP-PY-01.md) | PY-012 | ✅ **DONE** (2026-07-03: adopted basedpyright standard mode, CI non-blocking initially — not mypy strict) — Add type checking to dev deps and CI |
 | [BP-PY-02](tickets/BP-PY-02.md) | PY-021 | ✅ **DONE** — Add the `S` (flake8-bandit) ruff rule family with a tests per-file-ignore |
 | [BP-PY-03](tickets/BP-PY-03.md) | PY-030 | ✅ **DONE** — Add `--strict-markers` and `--strict-config` to pytest addopts |
 | ~~[BP-PY-04](tickets/BP-PY-04.md)~~ | PY-035 | ~~Add a local coverage gate with branch coverage~~ — **WON'T DO** |

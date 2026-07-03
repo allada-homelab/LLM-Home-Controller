@@ -25,7 +25,8 @@ env/
 
 # IDE settings
 .idea/
-.vscode/
+.vscode/*
+!.vscode/launch.json
 
 # Type checking / linting / testing caches
 .mypy_cache/

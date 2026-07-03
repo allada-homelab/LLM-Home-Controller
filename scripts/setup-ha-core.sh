@@ -53,11 +53,20 @@ cd /workspace/LLM-Home-Controller
 # Only install dependencies, NOT the package itself as an editable install.
 # The integration is loaded via symlink (step 5), and an editable install
 # adds a sys.path hook that conflicts with HA's custom_components loader.
-if [ -f "requirements.txt" ]; then
-    uv pip install -r requirements.txt 2>&1 | tail -3
-else
-    echo "     (no requirements.txt — skipping)"
+# Deps live in the integration manifest (there is no requirements.txt); parse
+# the "requirements" array and install it into the HA venv.
+MANIFEST="custom_components/llm_home_controller/manifest.json"
+INTEGRATION_REQS=$(python3 -c "import json; print('\n'.join(json.load(open('$MANIFEST'))['requirements']))") || {
+    echo "     ERROR: failed to parse 'requirements' from $MANIFEST" >&2
+    exit 1
+}
+if [ -z "$INTEGRATION_REQS" ]; then
+    echo "     ERROR: 'requirements' array in $MANIFEST is empty" >&2
+    exit 1
 fi
+# Deliberate word-splitting: one install arg per requirement (no spaces in specs).
+# shellcheck disable=SC2086
+uv pip install $INTEGRATION_REQS 2>&1 | tail -3
 
 # --- Step 5: Configure HA ---
 echo "[5/5] Configuring Home Assistant..."

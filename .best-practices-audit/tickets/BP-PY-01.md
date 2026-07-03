@@ -1,6 +1,15 @@
 # BP-PY-01: Add mypy strict type checking to dev deps and CI
 
-> **Status: WON'T DO (permanent).** Closed without action by maintainer decision.
+> **Status: DONE (2026-07-03).** Maintainer reversed the earlier WON'T DO decision and
+> adopted a type checker — but **basedpyright** (matching the user's global Python default),
+> not the originally-proposed mypy strict. Configured in `pyrightconfig.json`:
+> `typeCheckingMode = "standard"` (non-strict), `pythonVersion = "3.13"` (the
+> `requires-python` floor), `reportMissingTypeStubs = "none"`, scoped to
+> `custom_components/llm_home_controller` + `tests` with `reportPrivateUsage` /
+> `reportUnusedFunction` relaxed for tests. Added `basedpyright` to the dev group
+> (recorded in `uv.lock`) and a `just typecheck` recipe. CI runs `uv run basedpyright`
+> in `lint.yml` with `continue-on-error: true` initially (type baseline not yet clean).
+> The mypy-strict proposal below is superseded and kept for history.
 
 **Severity:** medium  |  **Rule:** PY-012 (python-best-practices)  |  **Area:** `pyproject.toml`, `.github/workflows/lint.yml`, `custom_components/llm_home_controller/`
 

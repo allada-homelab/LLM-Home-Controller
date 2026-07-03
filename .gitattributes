@@ -1,0 +1,12 @@
+# Default: let Git auto-detect text vs binary; the contributor's core.autocrlf
+# decides working-tree EOL.
+* text=auto
+
+# Shell scripts must stay LF — they run inside Linux containers (or via Git Bash
+# on Windows hosts), where CRLF breaks the shebang.
+*.sh text eol=lf
+
+# Windows batch/command/PowerShell files require CRLF or cmd.exe rejects them.
+*.cmd text eol=crlf
+*.bat text eol=crlf
+*.ps1 text eol=crlf

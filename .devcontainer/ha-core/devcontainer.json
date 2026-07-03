@@ -4,7 +4,9 @@
     "service": "ha-dev",
     "workspaceFolder": "/workspace/LLM-Home-Controller",
     "postCreateCommand": "bash scripts/setup-ha-core.sh",
-    "postStartCommand": "export PATH=/home/vscode/.local/ha-venv/bin:$PATH",
+    "remoteEnv": {
+        "PATH": "/home/vscode/.local/ha-venv/bin:${containerEnv:PATH}"
+    },
     "containerEnv": {
         "PYTHONASYNCIODEBUG": "1"
     },

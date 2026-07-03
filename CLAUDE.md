@@ -102,16 +102,22 @@ All tasks tracked in `.tasks/` directory — see `.tasks/progress.md` for curren
 - Mock `aiohttp.ClientSession` for API calls
 - Mock `ChatLog` via `MockChatLog` (from HA core test pattern) for conversation tests
 - Test all error paths: connection refused, auth failure, timeout, malformed response
-- Run: `uv run pytest tests/ -v`
-- Lint: `uv run ruff check .`
+- Preferred entrypoints (see `justfile`): `just check` (full CI mirror), `just test`, `just lint`, `just typecheck`.
+- `just`/`pre-commit` workflows assume the **"LLM-Home-Controller"** devcontainer (`.venv` via `uv sync`), NOT the "HA Core Functional Test" container (which uses a separate `ha-venv`).
+- Raw commands (reference): `uv run pytest tests/ -v`; lint `uv run ruff check .`; type-check `uv run basedpyright`.
 
 ## CI (`.github/workflows/lint.yml`)
-- uv-based job: `uv lock --check` → `uv sync --locked --dev` → `uv run ruff check .` → `uv run ruff format --check .` → `uv run pytest tests/`. Mirror it locally before pushing.
+- uv-based job: `uv lock --check` → `uv sync --locked --dev` → `uv run ruff check .` → `uv run ruff format --check .` → `uv run basedpyright` → `uv run pytest tests/`. Mirror it locally with `just check` before pushing.
+- The `basedpyright` step is `continue-on-error: true` (temporarily non-blocking) until the type baseline is clean; remove that once it is.
+- Separate `pre-commit` job runs `uv run pre-commit run --all-files` (the `uv-sync` hook is post-checkout/post-merge only, so it's skipped there).
 - `astral-sh/setup-uv` reads `.python-version` (3.14) — there is no hardcoded CI Python version; bump the pin in that file, not the workflow.
 - Actions are SHA-pinned (with a `# vX.Y.Z` comment). Keep them pinned when bumping.
+- Both workflows use `runs-on: ${{ vars.CI_RUNNER || 'ubuntu-latest' }}` (org var `CI_RUNNER=homelab-runners`) — falls back to GitHub-hosted if the var is unset.
 - `validate.yml` runs hassfest only; it's independent of the lockfile.
 
 ## Gotchas
 - **ruff `target-version` stays `py313`**, not `py314`: lint against the `requires-python` floor, and ruff 0.15.1's `py314` formatter is buggy (rewrites `except (A, B):` into invalid syntax).
 - **`PyTurboJPEG` is a dev dep** (pinned to HA's version): HA's `camera` component imports it, and `test_ai_task.py` pulls `camera` in transitively — without it the whole suite fails to collect.
 - **Never `pip install -e .`** here — it regenerates `llm_home_controller.egg-info/` and triggers setuptools auto-discovery. This is a HACS integration (symlink into `ha-config`), not a pip package; there is intentionally no `[build-system]`.
+- **`line-length = 120` is a deliberate, closed decision** — do not align it to HA core's 88.
+- **`basedpyright` runs in `standard` mode with `pythonVersion = "3.13"`** (the `requires-python` floor, mirroring the ruff `target-version` rationale), configured in `pyrightconfig.json`.

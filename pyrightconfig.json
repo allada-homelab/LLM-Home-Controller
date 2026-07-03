@@ -1,0 +1,17 @@
+{
+  "typeCheckingMode": "standard",
+  "pythonVersion": "3.13",
+  "venvPath": ".",
+  "venv": ".venv",
+  "include": ["custom_components/llm_home_controller", "tests"],
+  "exclude": ["**/__pycache__", "**/.venv", "**/node_modules"],
+  "reportMissingTypeStubs": "none",
+  "executionEnvironments": [
+    {
+      "root": "tests",
+      "extraPaths": ["."],
+      "reportPrivateUsage": "none",
+      "reportUnusedFunction": "none"
+    }
+  ]
+}
