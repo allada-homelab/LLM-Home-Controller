@@ -73,7 +73,9 @@ class LLMHomeControllerAITaskEntity(
         chat_log: conversation.ChatLog,
     ) -> ai_task.GenDataTaskResult:
         """Handle a generate data task."""
-        await self._async_handle_chat_log(chat_log)
+        # Pass the task's structure so the model is constrained to emit matching
+        # JSON, not merely parsed as JSON afterwards.
+        await self._async_handle_chat_log(chat_log, structure=task.structure)
 
         if not isinstance(chat_log.content[-1], conversation.AssistantContent):
             raise HomeAssistantError("Last content in chat log is not an AssistantContent")

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import logging
 from collections.abc import AsyncIterator
 from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
@@ -19,8 +20,10 @@ from homeassistant.components.conversation import (
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import llm
+from voluptuous_openapi import convert
 
 from custom_components.llm_home_controller.const import (
+    CONF_CUSTOM_TOOLS,
     CONF_FALLBACK_MODEL,
     CONF_FALLBACK_MODEL_2,
     CONF_MAX_CONTEXT_TOKENS,
@@ -2020,3 +2023,74 @@ async def test_custom_service_tool_call_error() -> None:
     result = await tool.async_call(hass, tool_input, MagicMock())
     assert "error" in result
     assert "Service failed" in result["error"]
+
+
+# --- _async_handle_chat_log: per-call structured output + tool gating ---
+
+_TRACE_PATCH = "custom_components.llm_home_controller.entity.conversation.async_conversation_trace_append"
+
+_DONE_SSE = [
+    _sse({"choices": [{"delta": {"role": "assistant", "content": "ok"}, "finish_reason": None}]}),
+    _sse({"choices": [{"delta": {}, "finish_reason": "stop"}]}),
+    _sse("[DONE]"),
+]
+
+
+@pytest.mark.asyncio
+async def test_structure_constrains_output_via_json_schema() -> None:
+    """A per-call structure is converted to a JSON schema and sent to the model."""
+    entity, session = _make_entity()
+    chat_log = _make_chat_log()
+    session.post = AsyncMock(return_value=_mock_sse_response(_DONE_SSE))
+
+    schema = vol.Schema({vol.Required("city"): str})
+    with patch(_TRACE_PATCH):
+        await entity._async_handle_chat_log(chat_log, structure=schema)
+
+    response_format = session.post.call_args.kwargs["json"]["response_format"]
+    assert response_format["type"] == "json_schema"
+    assert response_format["json_schema"]["schema"] == convert(schema)
+
+
+@pytest.mark.asyncio
+async def test_structure_overrides_static_response_format() -> None:
+    """A per-call structure wins over a statically configured response format."""
+    entity, session = _make_entity(
+        subentry_data={
+            CONF_MODEL: "test-model",
+            CONF_TEMPERATURE: DEFAULT_TEMPERATURE,
+            CONF_MAX_TOKENS: DEFAULT_MAX_TOKENS,
+            CONF_TOP_P: DEFAULT_TOP_P,
+            CONF_RESPONSE_FORMAT: "json_object",
+        }
+    )
+    chat_log = _make_chat_log()
+    session.post = AsyncMock(return_value=_mock_sse_response(_DONE_SSE))
+
+    schema = vol.Schema({vol.Required("city"): str})
+    with patch(_TRACE_PATCH):
+        await entity._async_handle_chat_log(chat_log, structure=schema)
+
+    assert session.post.call_args.kwargs["json"]["response_format"]["type"] == "json_schema"
+
+
+@pytest.mark.asyncio
+async def test_custom_tools_skipped_without_llm_api(caplog: pytest.LogCaptureFixture) -> None:
+    """Custom tools are not advertised when no LLM API is present (they cannot execute)."""
+    entity, session = _make_entity(
+        subentry_data={
+            CONF_MODEL: "test-model",
+            CONF_TEMPERATURE: DEFAULT_TEMPERATURE,
+            CONF_MAX_TOKENS: DEFAULT_MAX_TOKENS,
+            CONF_TOP_P: DEFAULT_TOP_P,
+            CONF_CUSTOM_TOOLS: '[{"name": "x", "description": "d", "service": "light.turn_on"}]',
+        }
+    )
+    chat_log = _make_chat_log()  # llm_api is None
+    session.post = AsyncMock(return_value=_mock_sse_response(_DONE_SSE))
+
+    with patch(_TRACE_PATCH), caplog.at_level(logging.WARNING):
+        await entity._async_handle_chat_log(chat_log)
+
+    assert "tools" not in session.post.call_args.kwargs["json"]
+    assert "no LLM API is selected" in caplog.text

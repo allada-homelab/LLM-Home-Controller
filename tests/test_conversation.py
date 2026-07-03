@@ -492,6 +492,51 @@ def test_serialize_deserialize_roundtrip() -> None:
     assert deserialized[2].content == "Turn on lights"
 
 
+def test_serialize_roundtrip_preserves_thinking_content() -> None:
+    """Reasoning must survive memory replay (Anthropic re-serializes it on the next turn)."""
+    from custom_components.llm_home_controller.conversation import _deserialize_content, _serialize_content
+
+    original: list[conversation.Content] = [
+        conversation.AssistantContent(
+            agent_id="test",
+            content="The answer is 42.",
+            thinking_content="Let me reason step by step...",
+        ),
+    ]
+    deserialized = _deserialize_content(_serialize_content(original))
+
+    assert isinstance(deserialized[0], conversation.AssistantContent)
+    assert deserialized[0].thinking_content == "Let me reason step by step..."
+
+
+def test_serialize_roundtrip_preserves_attachments() -> None:
+    """Restored vision turns must keep their attachments."""
+    from pathlib import Path
+
+    from custom_components.llm_home_controller.conversation import _deserialize_content, _serialize_content
+
+    original: list[conversation.Content] = [
+        conversation.UserContent(
+            content="What is in this image?",
+            attachments=[
+                conversation.Attachment(
+                    media_content_id="media-source://x",
+                    mime_type="image/png",
+                    path=Path("/media/pic.png"),
+                )
+            ],
+        ),
+    ]
+    deserialized = _deserialize_content(_serialize_content(original))
+
+    assert isinstance(deserialized[0], conversation.UserContent)
+    assert deserialized[0].attachments is not None
+    att = deserialized[0].attachments[0]
+    assert att.media_content_id == "media-source://x"
+    assert att.mime_type == "image/png"
+    assert att.path == Path("/media/pic.png")
+
+
 # --- Feature: Update listener (hot-reload) ---
 
 

@@ -88,7 +88,7 @@ async def test_generate_data_text() -> None:
 
     result = await entity._async_generate_data(task, chat_log)
 
-    entity._async_handle_chat_log.assert_called_once_with(chat_log)
+    entity._async_handle_chat_log.assert_called_once_with(chat_log, structure=None)
     assert isinstance(result, ai_task.GenDataTaskResult)
     assert result.data == "Here is the summary."
     assert result.conversation_id == "conv-123"
@@ -114,6 +114,8 @@ async def test_generate_data_structured() -> None:
 
     result = await entity._async_generate_data(task, chat_log)
 
+    # The task's structure must be forwarded so the model is constrained to it.
+    entity._async_handle_chat_log.assert_called_once_with(chat_log, structure=task.structure)
     assert result.data == {"items": ["milk", "eggs"]}
 
 

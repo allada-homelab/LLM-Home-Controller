@@ -18,6 +18,7 @@ from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import llm
 from homeassistant.helpers.dispatcher import async_dispatcher_send
 from homeassistant.helpers.entity import Entity
+from voluptuous_openapi import convert
 
 from .const import (
     CONF_CUSTOM_TOOLS,
@@ -370,8 +371,15 @@ class LLMHomeControllerBaseLLMEntity(Entity):
     async def _async_handle_chat_log(
         self,
         chat_log: conversation.ChatLog,
+        *,
+        structure: vol.Schema | None = None,
     ) -> None:
-        """Generate an answer for the chat log."""
+        """Generate an answer for the chat log.
+
+        `structure` is an optional per-call output schema (e.g. an AI Task's
+        `structure`). When provided it constrains the model to emit matching
+        JSON and overrides the statically configured response format.
+        """
         options = self.subentry.data
         model = options.get(CONF_MODEL, "")
         temperature = options.get(CONF_TEMPERATURE, DEFAULT_TEMPERATURE)
@@ -391,14 +399,22 @@ class LLMHomeControllerBaseLLMEntity(Entity):
                 custom_serializer=custom_serializer,
             )
 
-        # Parse and inject custom tool definitions
+        # Parse and inject custom tool definitions. Custom tools are executed
+        # through chat_log.llm_api.async_call_tool, so without an LLM API a
+        # tool call would raise "No LLM API configured" mid-turn. Only advertise
+        # them when an LLM API is present (matches entity/memory tool gating).
         if custom_tools_raw := options.get(CONF_CUSTOM_TOOLS):
-            custom_tools = _parse_custom_tools(custom_tools_raw, self.hass)
-            if custom_tools:
-                tools.extend(self._provider.format_tools(custom_tools, custom_serializer=custom_serializer))
-                # Inject into llm_api so async_call_tool can find them
-                if chat_log.llm_api:
+            if chat_log.llm_api:
+                custom_tools = _parse_custom_tools(custom_tools_raw, self.hass)
+                if custom_tools:
+                    tools.extend(self._provider.format_tools(custom_tools, custom_serializer=custom_serializer))
+                    # Inject into llm_api so async_call_tool can find them
                     chat_log.llm_api.tools.extend(custom_tools)
+            else:
+                _LOGGER.warning(
+                    "Custom tools are configured but no LLM API is selected; skipping them "
+                    "(they cannot be executed without an LLM API)"
+                )
 
         # Build extra options for provider-specific features
         extra_options: dict[str, Any] = {}
@@ -418,6 +434,12 @@ class LLMHomeControllerBaseLLMEntity(Entity):
                     extra_options["json_schema"] = json.loads(schema_raw)
                 except json.JSONDecodeError:
                     _LOGGER.warning("Invalid JSON schema, ignoring")
+
+        # A per-call output schema (e.g. AI Task `structure`) takes precedence
+        # over the statically configured response format.
+        if structure is not None:
+            extra_options["response_format"] = "json_schema"
+            extra_options["json_schema"] = convert(structure, custom_serializer=custom_serializer)
 
         headers = self._provider.build_headers(self._api_key)
         if self._custom_headers_raw:

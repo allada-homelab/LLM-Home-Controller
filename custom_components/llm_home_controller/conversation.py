@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+from pathlib import Path
 from typing import Any, Literal
 
 from homeassistant.components import conversation
@@ -71,18 +72,33 @@ def _serialize_content(content_list: list[conversation.Content]) -> list[dict[st
                 "agent_id": item.agent_id,
                 "content": item.content,
             }
+            # Persist reasoning so providers that require it on replay (e.g.
+            # Anthropic extended thinking) can re-serialize it. `native` is
+            # deliberately not persisted: it is output-only metadata (usage /
+            # finish_reason), never read back when building a request, and not
+            # guaranteed JSON-serializable (HA omits it from AssistantContent.as_dict).
+            if item.thinking_content:
+                entry["thinking_content"] = item.thinking_content
             if item.tool_calls:
                 entry["tool_calls"] = [
                     {"id": tc.id, "tool_name": tc.tool_name, "tool_args": tc.tool_args} for tc in item.tool_calls
                 ]
             serialized.append(entry)
         elif isinstance(item, conversation.UserContent):
-            serialized.append(
-                {
-                    "type": "user",
-                    "content": item.content,
-                }
-            )
+            entry = {
+                "type": "user",
+                "content": item.content,
+            }
+            if item.attachments:
+                entry["attachments"] = [
+                    {
+                        "media_content_id": att.media_content_id,
+                        "mime_type": att.mime_type,
+                        "path": str(att.path),
+                    }
+                    for att in item.attachments
+                ]
+            serialized.append(entry)
     return serialized
 
 
@@ -94,7 +110,17 @@ def _deserialize_content(serialized: list[dict[str, Any]]) -> list[conversation.
     for item in serialized:
         item_type = item.get("type")
         if item_type == "user":
-            result.append(conversation.UserContent(content=item["content"]))
+            attachments = None
+            if raw_attachments := item.get("attachments"):
+                attachments = [
+                    conversation.Attachment(
+                        media_content_id=att["media_content_id"],
+                        mime_type=att["mime_type"],
+                        path=Path(att["path"]),
+                    )
+                    for att in raw_attachments
+                ]
+            result.append(conversation.UserContent(content=item["content"], attachments=attachments))
         elif item_type == "assistant":
             tool_calls = None
             if "tool_calls" in item:
@@ -110,6 +136,7 @@ def _deserialize_content(serialized: list[dict[str, Any]]) -> list[conversation.
                 conversation.AssistantContent(
                     agent_id=item.get("agent_id", ""),
                     content=item.get("content"),
+                    thinking_content=item.get("thinking_content"),
                     tool_calls=tool_calls,
                 )
             )
