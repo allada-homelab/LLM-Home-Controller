@@ -53,11 +53,11 @@ def test_sensor_name() -> None:
     assert sensor.name == "Token Usage"
 
 
-def test_handle_usage_update() -> None:
+def test_handle_usage_update(monkeypatch: pytest.MonkeyPatch) -> None:
     """Test that usage updates accumulate correctly."""
     sensor = _make_sensor()
     sensor.hass = MagicMock(spec=HomeAssistant)
-    sensor.async_write_ha_state = MagicMock()
+    monkeypatch.setattr(sensor, "async_write_ha_state", MagicMock())
 
     sensor._handle_usage_update(100, 50)
     assert sensor.native_value == 150
@@ -76,11 +76,11 @@ def test_handle_usage_update() -> None:
     assert sensor.extra_state_attributes["last_output_tokens"] == 100
 
 
-def test_cumulative_tracking() -> None:
+def test_cumulative_tracking(monkeypatch: pytest.MonkeyPatch) -> None:
     """Test that multiple updates are cumulative."""
     sensor = _make_sensor()
     sensor.hass = MagicMock(spec=HomeAssistant)
-    sensor.async_write_ha_state = MagicMock()
+    monkeypatch.setattr(sensor, "async_write_ha_state", MagicMock())
 
     for _i in range(5):
         sensor._handle_usage_update(10, 5)
@@ -90,12 +90,12 @@ def test_cumulative_tracking() -> None:
 
 
 @pytest.mark.asyncio
-async def test_restore_state() -> None:
+async def test_restore_state(monkeypatch: pytest.MonkeyPatch) -> None:
     """Test that sensor restores state across HA restarts."""
     sensor = _make_sensor()
     sensor.hass = MagicMock(spec=HomeAssistant)
     sensor.entity_id = "sensor.test_agent_token_usage"
-    sensor.async_write_ha_state = MagicMock()
+    monkeypatch.setattr(sensor, "async_write_ha_state", MagicMock())
 
     # Mock restore state
     last_state = MagicMock()
