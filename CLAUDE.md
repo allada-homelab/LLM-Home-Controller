@@ -107,12 +107,11 @@ All tasks tracked in `.tasks/` directory — see `.tasks/progress.md` for curren
 - Raw commands (reference): `uv run pytest tests/ -v`; lint `uv run ruff check .`; type-check `uv run basedpyright`.
 
 ## CI (`.github/workflows/lint.yml`)
-- uv-based job: `uv lock --check` → `uv sync --locked --dev` → `uv run ruff check .` → `uv run ruff format --check .` → `uv run basedpyright` → `uv run pytest tests/`. Mirror it locally with `just check` before pushing.
-- The `basedpyright` step is `continue-on-error: true` (temporarily non-blocking) until the type baseline is clean; remove that once it is.
-- Separate `pre-commit` job runs `uv run pre-commit run --all-files` (the `uv-sync` hook is post-checkout/post-merge only, so it's skipped there).
+- Single uv job: `uv lock --check` → `uv sync --locked --dev` → `uv run ruff check .` → `uv run ruff format --check .` → `uv run pytest tests/`. Mirror it locally with `just check` before pushing.
+- CI is deliberately minimal and runs on `ubuntu-latest` (GitHub-hosted; this public repo must not target the homelab runners). basedpyright and pre-commit are local-only tools (`just typecheck`, `just pre-commit`) — do not re-add them as CI jobs.
+- No Dependabot: its uv updater can't resolve through the `homeassistant` dep (backtracks into unbuildable 2015 sdists). Bump deps manually.
 - `astral-sh/setup-uv` reads `.python-version` (3.14) — there is no hardcoded CI Python version; bump the pin in that file, not the workflow.
 - Actions are SHA-pinned (with a `# vX.Y.Z` comment). Keep them pinned when bumping.
-- Both workflows use `runs-on: ${{ vars.CI_RUNNER || 'ubuntu-latest' }}` (org var `CI_RUNNER=homelab-runners`) — falls back to GitHub-hosted if the var is unset.
 - `validate.yml` runs hassfest only; it's independent of the lockfile.
 
 ## Gotchas
